@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "REVEXA",
+    "slug": "revexa",
+    "version": "1.0.0",
+    "orientation": "landscape",
+    "icon": "./assets/icon.png",
+    "scheme": "revexa",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#14141a"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E8651A"
+      },
+      "package": "cz.revexa.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0709e77c-9f9a-4954-b32f-1a74e49283ef"
+      }
+    }
+  }
+}
