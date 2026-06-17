@@ -34,6 +34,14 @@
       "expo-router",
       "expo-font",
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableJetifier": true
+          }
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Aplikace REVEXA potřebuje přístup ke kameře pro focení komínů."
