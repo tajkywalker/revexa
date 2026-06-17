@@ -1,4 +1,8 @@
-const { withAppBuildGradle, withProjectBuildGradle } = require("@expo/config-plugins");
+const {
+  withAppBuildGradle,
+  withProjectBuildGradle,
+  withGradleProperties,
+} = require("@expo/config-plugins");
 
 const MARKER = "// Fix: exclude old com.android.support to avoid duplicate classes";
 
@@ -20,7 +24,7 @@ configurations.all {
 
 const projectExclusionBlock = `
 ${MARKER}
-subprojects {
+allprojects {
     configurations.all {
         exclude group: "com.android.support", module: "support-compat"
         exclude group: "com.android.support", module: "support-media-compat"
@@ -37,7 +41,7 @@ subprojects {
 `;
 
 module.exports = function withAndroidExclusions(config) {
-  // Apply to android/app/build.gradle (direct fix for :app:checkReleaseDuplicateClasses)
+  // 1. Add exclusions to android/app/build.gradle
   config = withAppBuildGradle(config, (config) => {
     if (!config.modResults.contents.includes(MARKER)) {
       config.modResults.contents += appExclusionBlock;
@@ -45,11 +49,23 @@ module.exports = function withAndroidExclusions(config) {
     return config;
   });
 
-  // Apply to android/build.gradle as well (subprojects broadcover)
+  // 2. Add exclusions via allprojects{} in android/build.gradle
   config = withProjectBuildGradle(config, (config) => {
     if (!config.modResults.contents.includes(MARKER)) {
       config.modResults.contents += projectExclusionBlock;
     }
+    return config;
+  });
+
+  // 3. Enable Jetifier directly in gradle.properties (backup fix)
+  config = withGradleProperties(config, (config) => {
+    config.modResults = config.modResults.filter(
+      (item) => !["android.enableJetifier", "android.useAndroidX"].includes(item.key)
+    );
+    config.modResults.push(
+      { type: "property", key: "android.useAndroidX", value: "true" },
+      { type: "property", key: "android.enableJetifier", value: "true" }
+    );
     return config;
   });
 
