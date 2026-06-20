@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, PanResponder, StyleSheet } from 'react-native';
 import { C, F, S, R } from '../theme';
-import { getOrder, saveOrder, Order, getCustomer, Customer, getChimneys, Chimney, getInspection, saveInspection, Inspection, CheckItem, DEFAULT_CHECK_ITEMS } from '../db/database';
+import { getOrder, saveOrder, deleteOrder, Order, getCustomer, Customer, getChimneys, Chimney, getInspection, saveInspection, Inspection, CheckItem, DEFAULT_CHECK_ITEMS } from '../db/database';
 import { formatDate, formatCurrency, STATUS_LABELS, STATUS_COLORS, nowISO, todayISO, uid } from '../utils';
 
 interface Props { orderId: string; onBack: () => void; onSelectCustomer: (id: string) => void; }
@@ -150,6 +150,7 @@ export default function OrderDetailScreen({ orderId, onBack, onSelectCustomer }:
             <Text style={s.cl}>AKCE</Text>
             <TouchableOpacity style={[s.actionBtn,{backgroundColor:C.primary}]} onPress={saveReport} disabled={saving}><Text style={s.actionBtnText}>{saving?'Ukládám...':'✓  ULOŽIT ZPRÁVU'}</Text></TouchableOpacity>
             <TouchableOpacity style={[s.actionBtn,{backgroundColor:C.surfaceEl,marginTop:S.sm}]} onPress={()=>Alert.alert('Dokončit zakázku?','',[{text:'Zrušit',style:'cancel'},{text:'Dokončit',onPress:()=>changeStatus('dokoncena')}])}><Text style={[s.actionBtnText,{color:C.success}]}>◎  ULOŽIT A UZAVŘÍT</Text></TouchableOpacity>
+            <TouchableOpacity style={[s.actionBtn,{backgroundColor:C.error+'20',marginTop:S.sm,borderWidth:1,borderColor:C.error}]} onPress={()=>Alert.alert('Smazat zakázku?','Tato akce je nevratná.',[{text:'Zrušit',style:'cancel'},{text:'Smazat',style:'destructive',onPress:()=>{deleteOrder(order.id);onBack();}}])}><Text style={[s.actionBtnText,{color:C.error}]}>🗑  SMAZAT ZAKÁZKU</Text></TouchableOpacity>
           </View>
         </ScrollView>
       </View>

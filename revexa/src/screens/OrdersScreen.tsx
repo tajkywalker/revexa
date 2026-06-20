@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, Modal, ScrollView, Alert } from 'react-native';
 import { C, F, S, R } from '../theme';
-import { getOrders, saveOrder, Order, getCustomers, Customer } from '../db/database';
+import { getOrders, saveOrder, deleteOrder, Order, getCustomers, Customer } from '../db/database';
 import { uid, nowISO, todayISO, formatDate, formatCurrency, STATUS_LABELS, STATUS_COLORS } from '../utils';
 
 interface Props { onSelectOrder: (orderId: string) => void; }
@@ -61,7 +61,7 @@ export default function OrdersScreen({ onSelectOrder }: Props) {
       </View>
       <FlatList data={orders} keyExtractor={o => o.id} contentContainerStyle={{ padding:S.base, gap:S.sm }}
         renderItem={({ item }) => (
-          <TouchableOpacity style={s.card} onPress={() => onSelectOrder(item.id)}>
+          <TouchableOpacity style={s.card} onPress={() => onSelectOrder(item.id)} onLongPress={() => Alert.alert('Smazat zakázku?', `${item.orderNumber} — ${item.customerName}`, [{ text: 'Zrušit', style: 'cancel' }, { text: 'Smazat', style: 'destructive', onPress: () => { deleteOrder(item.id); loadOrders(); } }])}>
             <View style={s.cardTop}>
               <Text style={s.orderNum}>{item.orderNumber}</Text>
               <View style={[s.badge,{backgroundColor:STATUS_COLORS[item.status]+'30'}]}><Text style={[s.badgeText,{color:STATUS_COLORS[item.status]}]}>{STATUS_LABELS[item.status]}</Text></View>

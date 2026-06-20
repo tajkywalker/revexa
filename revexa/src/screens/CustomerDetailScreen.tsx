@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, StyleSheet } from 'react-native';
 import { C, F, S, R } from '../theme';
-import { getCustomer, saveCustomer, deleteCustomer, Customer, getChimneys, saveChimney, deleteChimney, Chimney, getOrdersByCustomer, Order } from '../db/database';
+import { getCustomer, saveCustomer, deleteCustomer, Customer, getChimneys, saveChimney, deleteChimney, Chimney, getOrdersByCustomer, Order, saveObject, generateOID, ObjectRecord } from '../db/database';
 import { uid, nowISO, formatDate, STATUS_LABELS, STATUS_COLORS } from '../utils';
 
-interface Props { customerId?: string; onBack: () => void; onSelectOrder: (id: string) => void; }
+interface Props { customerId?: string; onBack: () => void; onSelectOrder: (id: string) => void; onSelectObject?: (id: string) => void; }
 
 const FIELDS: [keyof Customer, string][] = [['firstName','Jméno *'],['lastName','Příjmení *'],['phone','Telefon'],['email','Email'],['street','Ulice a číslo'],['city','Město'],['zip','PSČ']];
 
-export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder }: Props) {
+export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder, onSelectObject }: Props) {
   const isNew = !customerId;
   const [customer, setCustomer] = useState<Customer>({ id:uid(), firstName:'', lastName:'', phone:'', email:'', street:'', city:'', zip:'', note:'', createdAt:nowISO() });
   const [chimneys, setChimneys] = useState<Chimney[]>([]);
@@ -26,7 +26,27 @@ export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder
   function save() {
     if (!customer.firstName || !customer.lastName) { Alert.alert('Chyba','Zadejte jméno a příjmení'); return; }
     saveCustomer(customer);
-    if (isNew) onBack(); else Alert.alert('Uloženo','Informace byly uloženy.');
+    if (isNew) {
+      Alert.alert('Zákazník vytvořen', 'Chcete automaticky vytvořit propojený objekt se stejnou adresou?', [
+        { text: 'Ne', onPress: () => onBack() },
+        { text: 'Ano, vytvořit objekt', onPress: () => {
+          const now = nowISO();
+          const obj: ObjectRecord = {
+            id: uid(), oid: generateOID(),
+            street: customer.street, city: customer.city, zip: customer.zip,
+            ownerFirstName: customer.firstName, ownerLastName: customer.lastName,
+            ownerPhone: customer.phone, ownerEmail: customer.email,
+            ownerStreet: customer.street, ownerCity: customer.city, ownerZip: customer.zip,
+            buildingType: '', buildingFloors: '', heatingSystem: '', boilerBrand: '',
+            flueType: '', flueHeight: 0, flueDiameter: 0, numAppliances: 0,
+            applianceLocation: '', cleaningDoorLocation: '', revisionNumber: '',
+            notes: '', customerId: customer.id, createdAt: now, updatedAt: now,
+          };
+          saveObject(obj);
+          if (onSelectObject) onSelectObject(obj.id); else onBack();
+        }},
+      ]);
+    } else Alert.alert('Uloženo','Informace byly uloženy.');
   }
 
   function addChimney() {
