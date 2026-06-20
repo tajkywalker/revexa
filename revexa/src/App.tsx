@@ -1,137 +1,78 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { initDb } from './db/database';
 import { C, F } from './theme';
+import AppSidebar, { AppSection } from './components/AppSidebar';
 import OrdersScreen from './screens/OrdersScreen';
+import OrderDetailScreen from './screens/OrderDetailScreen';
 import CalendarScreen from './screens/CalendarScreen';
 import CustomersScreen from './screens/CustomersScreen';
-import StatsScreen from './screens/StatsScreen';
-import OrderDetailScreen from './screens/OrderDetailScreen';
 import CustomerDetailScreen from './screens/CustomerDetailScreen';
-import InspectionScreen from './screens/InspectionScreen';
+import StatsScreen from './screens/StatsScreen';
 
-export type RootStackParamList = {
-  MainTabs: undefined;
-  OrderDetail: { orderId: string };
-  CustomerDetail: { customerId?: string };
-  Inspection: { orderId: string };
-};
+export type AppView =
+  | { screen: 'orders_list' }
+  | { screen: 'order_detail'; orderId: string }
+  | { screen: 'calendar' }
+  | { screen: 'customers_list' }
+  | { screen: 'customer_detail'; customerId?: string }
+  | { screen: 'stats' };
 
-const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator<RootStackParamList>();
-
-function MainTabs() {
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: { backgroundColor: C.surface, borderTopColor: C.border, height: 56 },
-        tabBarActiveTintColor: C.primary,
-        tabBarInactiveTintColor: C.textSecondary,
-        tabBarLabelStyle: { fontSize: F.xs, marginBottom: 4 },
-      }}
-    >
-      <Tab.Screen
-        name="Zakázky"
-        component={OrdersScreen}
-        options={{ tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>📋</Text> }}
-      />
-      <Tab.Screen
-        name="Kalendář"
-        component={CalendarScreen}
-        options={{ tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>📅</Text> }}
-      />
-      <Tab.Screen
-        name="Zákazníci"
-        component={CustomersScreen}
-        options={{ tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>👥</Text> }}
-      />
-      <Tab.Screen
-        name="Statistiky"
-        component={StatsScreen}
-        options={{ tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>📊</Text> }}
-      />
-    </Tab.Navigator>
-  );
+function sectionOf(v: AppView): AppSection {
+  if (v.screen === 'orders_list' || v.screen === 'order_detail') return 'orders';
+  if (v.screen === 'calendar') return 'calendar';
+  if (v.screen === 'customers_list' || v.screen === 'customer_detail') return 'customers';
+  return 'stats';
 }
 
 export default function App() {
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [view, setView] = useState<AppView>({ screen: 'orders_list' });
 
   useEffect(() => {
-    try {
-      initDb();
-    } catch (e: any) {
-      console.error('DB init error:', e);
-      setError(String(e?.message ?? e));
-    } finally {
-      setReady(true);
-    }
+    try { initDb(); } catch (e: any) { setDbError(String(e?.message ?? e)); } finally { setReady(true); }
   }, []);
 
-  // Zobraz chybu pokud databáze selhala (pro ladění)
-  if (error) {
-    return (
-      <View style={[s.loading, { padding: 24 }]}>
-        <Text style={[s.loadingText, { color: '#FF453A', fontSize: 18, marginBottom: 12 }]}>Chyba při startu</Text>
-        <Text style={{ color: '#aaa', fontSize: 13, textAlign: 'center' }}>{error}</Text>
-      </View>
-    );
+  function go(v: AppView) { setView(v); }
+  function onSidebarSelect(section: AppSection) {
+    if (section === 'orders')    go({ screen: 'orders_list' });
+    if (section === 'calendar')  go({ screen: 'calendar' });
+    if (section === 'customers') go({ screen: 'customers_list' });
+    if (section === 'stats')     go({ screen: 'stats' });
   }
 
-  if (!ready) {
-    return (
-      <View style={s.loading}>
-        <Text style={s.loadingText}>REVEXA</Text>
-        <Text style={{ color: C.textSecondary, fontSize: F.sm, marginTop: 8 }}>Načítání...</Text>
-      </View>
-    );
-  }
+  if (dbError) return <View style={[s.center,{padding:24}]}><Text style={{color:C.error,fontSize:18,fontWeight:'bold',marginBottom:12}}>Chyba při startu</Text><Text style={{color:'#aaa',fontSize:12,textAlign:'center'}}>{dbError}</Text></View>;
+  if (!ready)  return <View style={s.center}><Text style={s.loadingText}>REVEXA</Text><Text style={{color:C.textSecondary,fontSize:F.sm,marginTop:8}}>Načítání...</Text></View>;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
-        <NavigationContainer
-          theme={{
-            dark: true,
-            colors: {
-              primary: C.primary,
-              background: C.bg,
-              card: C.surface,
-              text: C.textPrimary,
-              border: C.border,
-              notification: C.primary,
-            },
-          }}
-        >
-          <Stack.Navigator
-            screenOptions={{
-              headerStyle: { backgroundColor: C.surface },
-              headerTintColor: C.textPrimary,
-              headerTitleStyle: { fontWeight: 'bold' },
-              cardStyle: { backgroundColor: C.bg },
-            }}
-          >
-            <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
-            <Stack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: 'Detail zakázky' }} />
-            <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} options={{ title: 'Zákazník' }} />
-            <Stack.Screen name="Inspection" component={InspectionScreen} options={{ headerShown: false }} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <StatusBar style="light" backgroundColor={C.surface} />
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top','bottom','left','right']}>
+          <View style={s.root}>
+            <AppSidebar active={sectionOf(view)} onSelect={onSidebarSelect} />
+            <View style={s.content}>
+              {view.screen === 'orders_list'     && <OrdersScreen onSelectOrder={(id) => go({ screen: 'order_detail', orderId: id })} />}
+              {view.screen === 'order_detail'    && <OrderDetailScreen orderId={view.orderId} onBack={() => go({ screen: 'orders_list' })} onSelectCustomer={(id) => go({ screen: 'customer_detail', customerId: id })} />}
+              {view.screen === 'calendar'        && <CalendarScreen onSelectOrder={(id) => go({ screen: 'order_detail', orderId: id })} />}
+              {view.screen === 'customers_list'  && <CustomersScreen onSelectCustomer={(id) => go({ screen: 'customer_detail', customerId: id })} onNewCustomer={() => go({ screen: 'customer_detail' })} />}
+              {view.screen === 'customer_detail' && <CustomerDetailScreen customerId={(view as any).customerId} onBack={() => go({ screen: 'customers_list' })} onSelectOrder={(id) => go({ screen: 'order_detail', orderId: id })} />}
+              {view.screen === 'stats'           && <StatsScreen />}
+            </View>
+          </View>
+        </SafeAreaView>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
 
 const s = StyleSheet.create({
-  loading: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
+  center: { flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: C.primary, fontSize: 32, fontWeight: 'bold', letterSpacing: 4 },
+  root: { flex: 1, flexDirection: 'row', backgroundColor: C.bg },
+  content: { flex: 1, backgroundColor: C.bg },
 });
