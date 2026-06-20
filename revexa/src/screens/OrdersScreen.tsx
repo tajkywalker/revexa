@@ -9,12 +9,18 @@ import { uid, nowISO, todayISO, formatDate, formatCurrency, STATUS_LABELS, STATU
 import { RootStackParamList } from '../App';
 
 type Nav = StackNavigationProp<RootStackParamList>;
-const FILTERS = [{key:'',label:'Vše'},{key:'nova',label:'Nové'},{key:'probihajici',label:'Probíhající'},{key:'dokoncena',label:'Dokončené'}];
+const FILTERS = [
+  {key:'dnes',label:'📅 Dnes'},
+  {key:'',label:'Vše'},
+  {key:'nova',label:'Nové'},
+  {key:'probihajici',label:'Probíhající'},
+  {key:'dokoncena',label:'Dokončené'},
+];
 
 export default function OrdersScreen() {
   const nav = useNavigation<Nav>();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState('dnes');
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -23,7 +29,12 @@ export default function OrdersScreen() {
   useFocusEffect(useCallback(() => { loadOrders(); }, [filter, search]));
 
   function loadOrders() {
-    let list = getOrders(filter||undefined);
+    let list: Order[];
+    if (filter === 'dnes') {
+      list = getOrders().filter(o => o.scheduledDate === todayISO());
+    } else {
+      list = getOrders(filter || undefined);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(o => o.orderNumber.toLowerCase().includes(q)||(o.address||'').toLowerCase().includes(q)||(o.customerName||'').toLowerCase().includes(q));

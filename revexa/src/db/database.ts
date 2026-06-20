@@ -71,7 +71,15 @@ export function getInspection(orderId:string): Inspection|null {
   if (!row) return null;
   return {...row, checkItems:JSON.parse(row.checkItems)};
 }
+export function getInspectionsByCustomer(customerId:string): (Inspection & {orderNumber:string})[] {
+  const rows = getDb().getAllSync<any>(`SELECT i.*, o.orderNumber FROM inspections i JOIN orders o ON i.orderId=o.id WHERE o.customerId=? ORDER BY i.inspectionDate DESC`,[customerId]);
+  return rows.map(r=>({...r, checkItems:JSON.parse(r.checkItems)}));
+}
 export function saveInspection(ins:Inspection) { getDb().runSync('INSERT OR REPLACE INTO inspections VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',[ins.id,ins.orderId,ins.chimneyId,ins.reportNumber,ins.inspectionDate,JSON.stringify(ins.checkItems),ins.overallResult,ins.coMeasurement??null,ins.notes,ins.recommendations,ins.signatureBase64??null,ins.createdAt]); }
+
+export function getOrdersByCustomer(customerId:string): Order[] {
+  return getDb().getAllSync<Order>(`SELECT o.*, c.firstName||' '||c.lastName as customerName FROM orders o LEFT JOIN customers c ON o.customerId=c.id WHERE o.customerId=? ORDER BY o.scheduledDate DESC`,[customerId]);
+}
 
 export function getStats() {
   const db = getDb();
