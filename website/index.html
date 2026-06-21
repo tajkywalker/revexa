@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aunaria</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background -->
+    <div class="main-background"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="logo-aunaria.png" alt="Aunaria">
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#features">Function</a></li>
+                <li><a href="updates.html">Update Log</a></li>
+                <li><a href="wiki.html">Wiki</a></li>
+                <li><a href="store.html">Store</a></li>
+            </ul>
+            <div class="nav-right">
+                <button class="nav-icon-btn" onclick="openProfileModal()" title="Můj Profil">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Second Menu -->
+    <div class="second-menu">
+        <div class="second-menu-container">
+            <a href="tickets.html" class="second-menu-link">
+                <i class="fas fa-ticket"></i>
+                Tickets
+            </a>
+            <a href="reports.html" class="second-menu-link">
+                <i class="fas fa-flag"></i>
+                Reports
+            </a>
+            <a href="nabory.html" class="second-menu-link">
+                <i class="fas fa-user-plus"></i>
+                Recruitments
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="hero-logo">
+                <img src="assets/aunaria.png" alt="Aunaria">
+            </div>
+            <p class="hero-tagline">Next Generation Hytale Experience</p>
+            <p class="hero-description">
+                Next-generation space survival. Explore the infinite universe with modified planetary physics, 
+                custom residence systems, portals, and Slimefun 2.0 with 3D models. Experience Skyblock like no one else has.
+            </p>
+            <div class="hero-buttons">
+                <a href="#galaxy" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    <span>Explore</span>
+                </a>
+                <a href="https://store.aunaria.net" class="btn-secondary">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Visit the Store</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Server Bar -->
+    <div class="server-bar">
+        <div class="server-container">
+            <div class="server-info-left">
+                <i class="fas fa-server server-icon"></i>
+                <div class="server-details">
+                    <h3>Server IP</h3>
+                    <div class="server-ip" onclick="copyIP()">play.aunaria.net</div>
+                </div>
+            </div>
+            <div class="server-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Maintenance</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Game Mods</h2>
+            <p class="section-subtitle">Three unique gaming experiences</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-globe feature-icon"></i>
+                <div class="feature-number">01 — Server</div>
+                <h3>Survival</h3>
+                <div class="feature-badge">Universe Update</div>
+                <p>Explore an infinite universe full of unique planets. Each planet has its own gravity, new biomes, new loot, and appearances. Discover new ores, mobs, and structures. Travel between worlds using the portal system and build your empire with the custom residence system.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-cubes feature-icon"></i>
+                <div class="feature-number">02 — Server</div>
+                <h3>Slimefun 2.0</h3>
+                <div class="feature-badge">3D Models</div>
+                <p>A revolutionary automation system with 3D machine models instead of outdated multiblocks. Completely redesigned, Slimefun is much more comprehensive and detailed than the classic version. It includes its own currency system and expanded industrial automation options.</p>
+            </div>
+
+            <div class="feature-card coming-soon">
+                <i class="fas fa-cloud feature-icon"></i>
+                <div class="feature-number">03 — Server</div>
+                <h3>Skyblock</h3>
+                <div class="feature-badge coming-soon-badge">Coming Soon</div>
+                <p>A completely new approach to Skyblock with unique mechanics and progression. The server is currently under development and will soon revolutionize classic Skyblock gameplay. Get ready for something you've never seen before.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galaxy -->
+    <section class="galaxy" id="galaxy">
+        <div class="galaxy-container">
+            <i class="fas fa-rocket galaxy-icon"></i>
+            <h2 class="galaxy-title">Explore the Galaxy</h2>
+            <p class="galaxy-text">
+                An infinite universe full of planets awaits its explorers. Each world has its own rules, 
+                resources, and secrets. Your journey begins here, but how far you go is up to you.
+            </p>
+            <button class="btn-primary" onclick="openModal()">
+                <i class="fas fa-rocket"></i>
+                <span>Start survey</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- VIP Ranks -->
+    <section class="vip-section">
+        <div class="section-header">
+            <h2 class="section-title">VIP Ranks</h2>
+            <p class="section-subtitle">Support the server and get exclusive benefits</p>
+        </div>
+
+        <div class="vip-grid">
+            <div class="vip-card vip-basic">
+                <div class="vip-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="vip-name">VIP Basic</h3>
+                <div class="vip-price">3,96€<span>/month</span></div>
+                <ul class="vip-benefits">
+                    <li><i class="fas fa-check"></i>Fly - stamina +10%</li>
+                    <li><i class="fas fa-check"></i>Home - better progress</li>
+                    <li><i class="fas fa-check"></i>Residence - refueling cycle 1x / 10days</li>
+                    <li><i class="fas fa-check"></i>Prefix - default [VIP_1] badge</li>
+                </ul>
+                <button class="vip-button" onclick="window.location.href='store.html'">
+                    <i class="fas fa-shopping-cart"></i> Buy
+                </button>
+            </div>
+
+            <div class="vip-card vip-premium">
+                <div class="vip-badge">Favorite</div>
+                <div class="vip-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h3 class="vip-name">VIP Premium</h3>
+                <div class="vip-price">7,92€<span>/month</span></div>
+                <ul class="vip-benefits">
+                    <li><i class="fas fa-check"></i>Fly - stamina +15%</li>
+                    <li><i class="fas fa-check"></i>Home - better progress</li>
+                    <li><i class="fas fa-check"></i>Residence - refueling cycle 1x / 12days</li>
+                    <li><i class="fas fa-check"></i>Prefix - default [VIP_2] badge</li>
+                </ul>
+                <button class="vip-button" onclick="window.location.href='store.html'">
+                    <i class="fas fa-shopping-cart"></i> Buy
+                </button>
+            </div>
+
+            <div class="vip-card vip-ultra">
+                <div class="vip-icon">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h3 class="vip-name">VIP Ultra</h3>
+                <div class="vip-price">11,88€<span>/month</span></div>
+                <ul class="vip-benefits">
+                    <li><i class="fas fa-check"></i>Fly - stamina +20%</li>
+                    <li><i class="fas fa-check"></i>Home - better progress</li>
+                    <li><i class="fas fa-check"></i>Residence - refueling cycle 1x / 14days</li>
+                    <li><i class="fas fa-check"></i>Prefix - default [VIP_3] badge</li>
+                </ul>
+                <button class="vip-button" onclick="window.location.href='store.html'">
+                    <i class="fas fa-shopping-cart"></i> Buy
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="services">
+        <div class="section-header">
+            <h2 class="section-title">Players Services</h2>
+            <p class="section-subtitle">To access the features, you must log in and link your account.</p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card" onclick="requireAuth()">
+                <i class="fas fa-flag service-icon"></i>
+                <h3>Reports</h3>
+                <p>Report players who violate the server rules. Help keep the community safe and fair for all players.</p>
+                <span class="service-lock">
+                    <i class="fas fa-lock"></i>
+                    Requires Login
+                </span>
+            </div>
+
+            <div class="service-card" onclick="requireAuth()">
+                <i class="fas fa-ticket service-icon"></i>
+                <h3>Support Tickets</h3>
+                <p>Need help? Create a ticket and our team will help you with any problem or question as quickly as possible.</p>
+                <span class="service-lock">
+                    <i class="fas fa-lock"></i>
+                    Requires Login
+                </span>
+            </div>
+
+            <div class="service-card" onclick="requireAuth()">
+                <i class="fas fa-user-plus service-icon"></i>
+                <h3>Recruitments</h3>
+                <p>Want to join our team? Apply to be a moderator, creator, builder, or helper in our community.</p>
+                <span class="service-lock">
+                    <i class="fas fa-lock"></i>
+                    Requires Login
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-left-columns">
+                    <div class="footer-section">
+                        <h4>Sources</h4>
+                        <ul class="footer-links">
+                            <li><a href="https://wiki.aunaria.net"><i class="fas fa-book"></i> Wiki</a></li>
+                            <li><a href="https://store.aunaria.net"><i class="fas fa-shopping-cart"></i> Store</a></li>
+                            <li><a href="#"><i class="fas fa-gavel"></i> Rules</a></li>
+                            <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Community</h4>
+                        <ul class="footer-links">
+                            <li><a href="#"><i class="fab fa-discord"></i> Discord</a></li>
+                            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                            <li><a href="#"><i class="fab fa-youtube"></i> YouTube</a></li>
+                            <li><a href="#"><i class="fab fa-github"></i> GitHub</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="logo-aunaria.png" alt="Aunaria">
+                    </div>
+                    <p>Next generation Hytale server. Space survival with modified planet physics, custom residence systems, and a revolution in automation using Slimefun 2.0.</p>
+                </div>
+
+                <div class="footer-right-columns">
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <ul class="footer-links">
+                            <li><a href="#" onclick="openModal(); return false;"><i class="fas fa-sign-in-alt"></i> Login in</a></li>
+                            <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                            <li><a href="#"><i class="fas fa-flag"></i> Reports</a></li>
+                            <li><a href="#"><i class="fas fa-ticket"></i> Tickets</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Players</h4>
+                        <ul class="footer-links">
+                            <li><a href="#features"><i class="fas fa-gamepad"></i> Game mods</a></li>
+                            <li><a href="https://store.aunaria.net"><i class="fas fa-crown"></i> VIP ranks</a></li>
+                            <li><a href="#galaxy"><i class="fas fa-rocket"></i> Galaxy</a></li>
+                            <li><a href="#"><i class="fas fa-users"></i> Community</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>© 2026 Aunaria. All rights reserved.</div>
+                <div class="walker-crew">Walker Crew Studio</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Player Auth Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content modal-xlarge auth-modal-epic">
+            <span class="modal-close" onclick="closeModal('authModal')">&times;</span>
+
+            <div class="auth-bg-animated">
+                <div class="auth-particle"></div>
+                <div class="auth-particle"></div>
+                <div class="auth-particle"></div>
+                <div class="auth-particle"></div>
+                <div class="auth-particle"></div>
+            </div>
+
+            <div class="auth-container-epic">
+                <div class="auth-left-epic">
+                    <div class="auth-logo-wrapper">
+                        <div class="logo-glow"></div>
+                        <img src="logo-aunaria.png" alt="Aunaria" class="auth-logo-epic">
+                    </div>
+                    <h2 class="auth-welcome">Vítejte v Galaxii</h2>
+                    <p class="auth-subtitle">Připojte se k tisícům hráčů</p>
+
+                    <div class="auth-features-list">
+                        <div class="auth-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="feature-text">
+                                <h4>15+ Planet</h4>
+                                <p>Prozkoumejte nekonečný vesmír</p>
+                            </div>
+                        </div>
+                        <div class="auth-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="feature-text">
+                                <h4>Aktivní Komunita</h4>
+                                <p>Tisíce online hráčů denně</p>
+                            </div>
+                        </div>
+                        <div class="auth-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="feature-text">
+                                <h4>Bezpečnost</h4>
+                                <p>Chráněné účty a data</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="auth-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">3,542</div>
+                            <div class="stat-label">Hráčů</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Online</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">156</div>
+                            <div class="stat-label">Online Nyní</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-right-epic">
+                    <div class="auth-form-container">
+                        <div class="form-header-epic">
+                            <h3>Přihlášení</h3>
+                            <p>Propojte svůj Hytale účet</p>
+                        </div>
+
+                        <form onsubmit="handleAuth(event)" class="auth-form-epic">
+                            <div class="form-group-epic">
+                                <label>
+                                    <i class="fas fa-gamepad"></i>
+                                    Hytale Nick
+                                </label>
+                                <div class="input-wrapper-epic">
+                                    <i class="fas fa-user input-icon-epic"></i>
+                                    <input type="text" id="username" placeholder="Zadejte své Hytale jméno" required>
+                                    <div class="input-underline"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group-epic">
+                                <label>
+                                    <i class="fas fa-lock"></i>
+                                    Heslo
+                                </label>
+                                <div class="input-wrapper-epic">
+                                    <i class="fas fa-key input-icon-epic"></i>
+                                    <input type="password" id="password" placeholder="Zadejte své heslo" required>
+                                    <div class="input-underline"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-options">
+                                <label class="remember-me">
+                                    <input type="checkbox" id="remember">
+                                    <span class="checkmark"></span>
+                                    <span>Zapamatovat si mě</span>
+                                </label>
+                                <a href="#" class="forgot-password">Zapomněli jste heslo?</a>
+                            </div>
+
+                            <button type="submit" class="form-submit-epic">
+                                <span class="btn-text">Přihlásit se</span>
+                                <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
+                                <div class="btn-glow"></div>
+                            </button>
+
+                            <div class="form-divider">
+                                <span>nebo</span>
+                            </div>
+
+                            <button type="button" class="social-login discord-login">
+                                <i class="fab fa-discord"></i>
+                                <span>Přihlásit přes Discord</span>
+                            </button>
+
+                            <div class="auth-footer-info">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Nemáte účet? Vytvořte si ho na serveru pomocí <code>/register heslo email</code></p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content modal-xlarge">
+            <span class="modal-close" onclick="closeModal('profileModal')">&times;</span>
+            <div class="profile-shell">
+                <header class="profile-hero">
+                    <div class="profile-hero-left">
+                        <div class="profile-avatar-wrap">
+                            <img src="https://minotar.net/avatar/Steve/120" alt="Avatar" class="profile-avatar-img" id="profileAvatar">
+                            <span class="status-dot online" title="Online"></span>
+                            <button class="avatar-edit-btn" onclick="changeAvatar()">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                        <div class="profile-hero-meta">
+                            <div class="profile-name-row">
+                                <h2 class="profile-name">Tajkunek</h2>
+                                <span class="role-pill">vip-3</span>
+                            </div>
+                            <div class="profile-tags">
+                                <span class="profile-tag">Player</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-hero-right">
+                        <div class="profile-id">UUID: 7676987987654</div>
+                        <div class="profile-id">IP: 82.234.21.839</div>
+                    </div>
+                </header>
+
+                <div class="profile-grid">
+                    <section class="profile-card span-12 profile-kpis">
+                        <div class="profile-card-header">
+                            <div class="profile-card-title">Key Statistics</div>
+                            <div class="profile-card-meta">Last 30 Days</div>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi-item">
+                                <div class="kpi-value">245h</div>
+                                <div class="kpi-label">Played</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value">156</div>
+                                <div class="kpi-label">Votes</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value">1</div>
+                                <div class="kpi-label">Recruitments</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value">23</div>
+                                <div class="kpi-label">Tickets</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value">15</div>
+                                <div class="kpi-label">Reports</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value">8,420</div>
+                                <div class="kpi-label">Total XP</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="profile-card span-4 profile-progress">
+                        <div class="profile-card-header">
+                            <div class="profile-card-title">Level Progress</div>
+                        </div>
+                        <div class="level-icon-wrapper">
+                            <div class="level-icon">⚔️</div>
+                        </div>
+                        <div class="level-title">Diamond Elite</div>
+                        <div class="level-subtitle">Level 47 · Tier 4</div>
+                        <div class="level-progress">
+                            <div class="progress-info">
+                                <span class="progress-label">8 420 XP</span>
+                                <span>/ 10 000 XP</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 84%"></div>
+                            </div>
+                            <div class="progress-percentage">84% to the next level</div>
+                        </div>
+                    </section>
+
+                    <section class="profile-card span-4 profile-accounts">
+                        <div class="profile-card-header">
+                            <div class="profile-card-title">Linked Accounts</div>
+                            <div class="profile-card-meta">3 Connected</div>
+                        </div>
+                        <div class="account-list">
+                            <div class="account-row">
+                                <div class="account-icon"><i class="fab fa-discord" style="color: #5865F2;"></i></div>
+                                <div class="account-meta">
+                                    <div class="account-name">Discord</div>
+                                    <div class="account-value">Tajkunek#0001</div>
+                                </div>
+                                <span class="status-pill connected">Connected</span>
+                            </div>
+                            <div class="account-row">
+                                <div class="account-icon"><i class="fas fa-gamepad" style="color: #64c896;"></i></div>
+                                <div class="account-meta">
+                                    <div class="account-name">Hytale</div>
+                                    <div class="account-value">Tajkunek</div>
+                                </div>
+                                <span class="status-pill connected">Connected</span>
+                            </div>
+                            <div class="account-row">
+                                <div class="account-icon"><i class="fas fa-envelope" style="color: #ff6464;"></i></div>
+                                <div class="account-meta">
+                                    <div class="account-name">Email</div>
+                                    <div class="account-value">tajky.walker@gmail.com</div>
+                                </div>
+                                <span class="status-pill connected">Connected</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="profile-card span-4 profile-bio">
+                        <div class="profile-card-header">
+                            <div class="profile-card-title">Bio</div>
+                            <button class="bio-edit-btn"><i class="fas fa-pen"></i></button>
+                        </div>
+                        <p class="bio-text">I love Hytale.</p>
+                        <div class="bio-footer">
+                            <span>Member since 15. 1. 2026</span>
+                            <span>Last active: Right now</span>
+                        </div>
+                    </section>
+
+                    <section class="profile-card span-12 profile-details">
+                        <div class="profile-card-header">
+                            <div class="profile-card-title">Profile Details</div>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-block">
+                                <div class="detail-title">General</div>
+                                <div class="detail-row"><span>Superior</span><strong>—</strong></div>
+                                <div class="detail-row"><span>Team</span><strong>—</strong></div>
+                                <div class="detail-row"><span>Status</span><strong>Online</strong></div>
+                            </div>
+                            <div class="detail-block">
+                                <div class="detail-title">Economy</div>
+                                <div class="detail-row"><span>Total spent</span><strong>2,450 €</strong></div>
+                                <div class="detail-row"><span>Virtual currency</span><strong>15,600 C</strong></div>
+                            </div>
+                            <div class="detail-block">
+                                <div class="detail-title">Moderation</div>
+                                <div class="detail-row"><span>Total Bans</span><strong>0</strong></div>
+                                <div class="detail-row"><span>Total Kicks</span><strong>0</strong></div>
+                                <div class="detail-row"><span>Total Mutes</span><strong>0</strong></div>
+                                <div class="detail-row"><span>Total Warns</span><strong>0</strong></div>
+                            </div>
+                            <div class="detail-block">
+                                <div class="detail-title">System</div>
+                                <div class="detail-row"><span>UUID</span><strong>7676987987654</strong></div>
+                                <div class="detail-row"><span>IP Address</span><strong>82.234.21.839</strong></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Serverix Login Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" onclick="closeModal('adminModal')">&times;</span>
+            <div class="auth-container serverix-theme">
+                <div class="auth-left serverix-left">
+                    <div class="auth-branding">
+                        <div class="serverix-logo">
+                            <i class="fas fa-shield-halved"></i>
+                        </div>
+                        <h2>Serverix Admin</h2>
+                        <p>Přihlášení do administračního panelu</p>
+                        <div class="serverix-features">
+                            <div class="serverix-feature">
+                                <i class="fas fa-users"></i>
+                                <span>Správa hráčů</span>
+                            </div>
+                            <div class="serverix-feature">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Statistiky serveru</span>
+                            </div>
+                            <div class="serverix-feature">
+                                <i class="fas fa-cog"></i>
+                                <span>Konfigurace</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="auth-right">
+                    <form onsubmit="handleAdminAuth(event)" class="auth-form">
+                        <div class="form-group">
+                            <label>Admin Username</label>
+                            <div class="form-input-wrapper">
+                                <i class="fas fa-shield-halved form-input-icon admin-icon"></i>
+                                <input type="text" id="adminUsername" placeholder="Admin přihlašovací jméno" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Admin Heslo</label>
+                            <div class="form-input-wrapper">
+                                <i class="fas fa-key form-input-icon admin-icon"></i>
+                                <input type="password" id="adminPassword" placeholder="Admin heslo" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>2FA Kód</label>
+                            <div class="form-input-wrapper">
+                                <i class="fas fa-mobile-alt form-input-icon admin-icon"></i>
+                                <input type="text" id="admin2FA" placeholder="6-místný kód" maxlength="6" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="form-submit admin-submit">
+                            <i class="fas fa-sign-in-alt"></i> Přihlásit do Serverixu
+                        </button>
+                        <div class="auth-footer admin-footer">
+                            <i class="fas fa-lock"></i>
+                            Zabezpečené připojení k admin panelu
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyIP() {
+            navigator.clipboard.writeText('play.aunaria.net');
+            const el = document.querySelector('.server-ip');
+            const original = el.textContent;
+            el.textContent = 'IP ZKOPÍROVÁNA!';
+            setTimeout(() => el.textContent = original, 2000);
+        }
+
+        function openModal(modalId = 'authModal') {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function openProfileModal() {
+            openModal('profileModal');
+        }
+
+        function openAdminModal() {
+            openModal('adminModal');
+        }
+
+        function requireAuth() {
+            openModal('authModal');
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            alert('Vítej zpět, ' + username + '!\n\nPřipoj se na play.aunaria.net a použij /link pro propojení účtu.');
+            closeModal('authModal');
+        }
+
+        function handleAdminAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            alert('Admin přihlášení úspěšné!\n\nVítejte v Serverix panelu, ' + username + '.');
+            closeModal('adminModal');
+        }
+
+        function changeAvatar() {
+            alert('Funkce změny avataru bude brzy dostupná!');
+        }
+
+        window.onclick = e => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        };
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
