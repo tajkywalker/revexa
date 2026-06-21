@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = project.property('group')
+version = project.property('version')
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(project.property('javaVersion')))
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Hytale Server JAR - local install reference
+    compileOnly files(project.property('hytale.server.jar'))
+
+    // Utilities
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    // JSON handling (bundled)
+    implementation 'com.google.code.gson:gson:2.11.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['--enable-preview']
+    sourceCompatibility = project.property('javaVersion')
+    targetCompatibility = project.property('javaVersion')
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    relocate 'com.google.gson', 'studio.walkercrew.aunaria.libs.gson'
+}
+
+// Auto-update version in manifest.json before build
+processResources {
+    filesMatching('manifest.json') {
+        expand(version: project.version)
+    }
+}
+
+build.dependsOn shadowJar

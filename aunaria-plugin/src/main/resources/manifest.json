@@ -1,0 +1,18 @@
+{
+  "Group": "studio.walkercrew",
+  "Name": "Aunaria",
+  "Main": "studio.walkercrew.aunaria.AunariaPlugin",
+  "Version": "${version}",
+  "Description": "Aunaria - The Universe Awaits. Travel between planets, forge civilizations, and shape the cosmos.",
+  "Authors": [
+    {
+      "Name": "Walker Crew Studio",
+      "Url": "https://aunaria.gg"
+    }
+  ],
+  "Website": "https://aunaria.gg",
+  "ServerVersion": "*",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "DisabledByDefault": false
+}
