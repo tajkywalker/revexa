@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput, StyleSheet } from 'react-native';
 import { C, F, S, R } from '../theme';
-import { getCustomer, saveCustomer, deleteCustomer, Customer, getChimneys, saveChimney, deleteChimney, Chimney, getOrdersByCustomer, Order, saveObject, generateOID, ObjectRecord } from '../db/database';
+import { Ionicons } from '@expo/vector-icons';
+import { getCustomer, saveCustomer, deleteCustomer, Customer, getOrdersByCustomer, Order, saveObject, generateOID, ObjectRecord, getObjectsByCustomer } from '../db/database';
 import { uid, nowISO, formatDate, STATUS_LABELS, STATUS_COLORS } from '../utils';
 
 interface Props { customerId?: string; onBack: () => void; onSelectOrder: (id: string) => void; onSelectObject?: (id: string) => void; }
@@ -11,15 +12,17 @@ const FIELDS: [keyof Customer, string][] = [['firstName','Jméno *'],['lastName'
 export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder, onSelectObject }: Props) {
   const isNew = !customerId;
   const [customer, setCustomer] = useState<Customer>({ id:uid(), firstName:'', lastName:'', phone:'', email:'', street:'', city:'', zip:'', note:'', createdAt:nowISO() });
-  const [chimneys, setChimneys] = useState<Chimney[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [addMode, setAddMode] = useState(false);
-  const [newCh, setNewCh] = useState({ label:'', type:'', fuel:'' });
+  const [objects, setObjects] = useState<ObjectRecord[]>([]);
+  const [orders, setOrders]   = useState<Order[]>([]);
 
   useEffect(() => {
     if (!isNew && customerId) {
       const c = getCustomer(customerId);
-      if (c) { setCustomer(c); setChimneys(getChimneys(c.id)); setOrders(getOrdersByCustomer(c.id)); }
+      if (c) {
+        setCustomer(c);
+        setObjects(getObjectsByCustomer(c.id));
+        setOrders(getOrdersByCustomer(c.id));
+      }
     }
   }, [customerId]);
 
@@ -49,10 +52,22 @@ export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder
     } else Alert.alert('Uloženo','Informace byly uloženy.');
   }
 
-  function addChimney() {
-    if (!newCh.label.trim()) { Alert.alert('Chyba','Zadejte název'); return; }
-    const ch: Chimney = { id:uid(), customerId:customer.id, label:newCh.label, type:newCh.type, fuel:newCh.fuel, note:'' };
-    saveChimney(ch); setChimneys(p => [...p, ch]); setNewCh({ label:'', type:'', fuel:'' }); setAddMode(false);
+  function createLinkedObject() {
+    const now = nowISO();
+    const obj: ObjectRecord = {
+      id: uid(), oid: generateOID(),
+      street: customer.street, city: customer.city, zip: customer.zip,
+      ownerFirstName: customer.firstName, ownerLastName: customer.lastName,
+      ownerPhone: customer.phone, ownerEmail: customer.email,
+      ownerStreet: customer.street, ownerCity: customer.city, ownerZip: customer.zip,
+      buildingType: '', buildingFloors: '', heatingSystem: '', boilerBrand: '',
+      flueType: '', flueHeight: 0, flueDiameter: 0, numAppliances: 0,
+      applianceLocation: '', cleaningDoorLocation: '', revisionNumber: '',
+      notes: '', customerId: customer.id, createdAt: now, updatedAt: now,
+    };
+    saveObject(obj);
+    setObjects(prev => [...prev, obj]);
+    if (onSelectObject) onSelectObject(obj.id);
   }
 
   return (
@@ -77,23 +92,29 @@ export default function CustomerDetailScreen({ customerId, onBack, onSelectOrder
         {!isNew && (
           <View style={s.card}>
             <View style={{ flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginBottom:S.sm }}>
-              <Text style={s.cardLabel}>SPALINOVÉ CESTY ({chimneys.length})</Text>
-              <TouchableOpacity onPress={() => setAddMode(!addMode)}><Text style={{ color:C.primary, fontSize:F.sm }}>{addMode?'Zrušit':'+ Přidat'}</Text></TouchableOpacity>
+              <Text style={s.cardLabel}>PROPOJENÉ OBJEKTY ({objects.length})</Text>
+              <TouchableOpacity onPress={createLinkedObject} style={{ flexDirection:'row', alignItems:'center', gap:4 }}>
+                <Ionicons name="add" size={14} color={C.primary} />
+                <Text style={{ color:C.primary, fontSize:F.sm }}>Přidat objekt</Text>
+              </TouchableOpacity>
             </View>
-            {addMode && (
-              <View style={{ backgroundColor:C.surfaceEl, borderRadius:R.md, padding:S.sm, gap:S.xs, marginBottom:S.sm }}>
-                <TextInput style={s.inputSm} value={newCh.label} onChangeText={t=>setNewCh(p=>({...p,label:t}))} placeholder="Název *" placeholderTextColor={C.textTertiary} />
-                <TextInput style={s.inputSm} value={newCh.type} onChangeText={t=>setNewCh(p=>({...p,type:t}))} placeholder="Typ (průduch, komín...)" placeholderTextColor={C.textTertiary} />
-                <TextInput style={s.inputSm} value={newCh.fuel} onChangeText={t=>setNewCh(p=>({...p,fuel:t}))} placeholder="Palivo (dřevo, plyn...)" placeholderTextColor={C.textTertiary} />
-                <TouchableOpacity style={[s.primaryBtn,{marginTop:S.xs}]} onPress={addChimney}><Text style={s.primaryBtnText}>Přidat</Text></TouchableOpacity>
-              </View>
-            )}
-            {chimneys.length===0&&!addMode ? <Text style={{ color:C.textTertiary, fontSize:F.sm, textAlign:'center', paddingVertical:S.md }}>Žádné spalinové cesty</Text> :
-              chimneys.map((ch,i) => (
-                <View key={ch.id} style={[s.chRow, i>0&&{borderTopWidth:1,borderTopColor:C.border}]}>
-                  <View style={{ flex:1 }}><Text style={{ color:C.textPrimary, fontSize:F.sm, fontWeight:'600' }}>{ch.label}</Text><View style={{ flexDirection:'row', gap:S.md }}>{ch.type?<Text style={{ color:C.textTertiary, fontSize:F.xs }}>{ch.type}</Text>:null}{ch.fuel?<Text style={{ color:C.textTertiary, fontSize:F.xs }}>{ch.fuel}</Text>:null}</View></View>
-                  <TouchableOpacity onPress={() => Alert.alert('Smazat?',`"${ch.label}"`,[{text:'Zrušit',style:'cancel'},{text:'Smazat',style:'destructive',onPress:()=>{deleteChimney(ch.id);setChimneys(p=>p.filter(x=>x.id!==ch.id));}}])}><Text style={{ color:C.error, fontSize:F.xs }}>Smazat</Text></TouchableOpacity>
-                </View>
+            {objects.length === 0
+              ? <Text style={{ color:C.textTertiary, fontSize:F.sm, textAlign:'center', paddingVertical:S.md }}>
+                  Žádné propojené objekty.{'\n'}Klikněte „Přidat objekt" pro vytvoření.
+                </Text>
+              : objects.map((obj, i) => (
+                <TouchableOpacity key={obj.id} style={[s.chRow, i>0&&{borderTopWidth:1,borderTopColor:C.border}]} onPress={() => onSelectObject?.(obj.id)}>
+                  <View style={{ flex:1 }}>
+                    <View style={{ flexDirection:'row', alignItems:'center', gap:S.sm }}>
+                      <View style={s.oidTag}><Text style={s.oidText}>{obj.oid}</Text></View>
+                      <Text style={{ color:C.textPrimary, fontSize:F.sm, fontWeight:'600' }}>
+                        {obj.city}{obj.street ? ` – ${obj.street}` : ''}
+                      </Text>
+                    </View>
+                    {obj.buildingType ? <Text style={{ color:C.textTertiary, fontSize:F.xs, marginTop:2 }}>{obj.buildingType}</Text> : null}
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={C.textTertiary} />
+                </TouchableOpacity>
               ))
             }
           </View>
@@ -131,4 +152,6 @@ const s = StyleSheet.create({
   primaryBtn:{ backgroundColor:C.primary, borderRadius:R.md, padding:S.md, alignItems:'center' },
   primaryBtnText:{ color:'#fff', fontWeight:'bold', fontSize:F.md },
   deleteBtn:{ borderRadius:R.md, padding:S.md, alignItems:'center', borderWidth:1, borderColor:C.error },
+  oidTag:{ backgroundColor:C.primary+'20', borderRadius:R.sm, paddingHorizontal:S.xs, paddingVertical:1, borderWidth:1, borderColor:C.primary+'40' },
+  oidText:{ color:C.primary, fontWeight:'bold', fontSize:F.xs, letterSpacing:0.5 },
 });

@@ -10,13 +10,26 @@ import {
 } from '../db/database';
 import { uid, nowISO, formatDate } from '../utils';
 
+function getExpiryDate(inspectionDate: string): string {
+  try {
+    const d = new Date(inspectionDate + 'T12:00:00');
+    d.setFullYear(d.getFullYear() + 1);
+    return d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  } catch { return ''; }
+}
+
+function isExpired(inspectionDate: string): boolean {
+  try { return new Date(inspectionDate + 'T12:00:00') < new Date(new Date().setFullYear(new Date().getFullYear() - 1)); }
+  catch { return false; }
+}
+
 interface Props { objectId: string; onBack: () => void; onCreateInspection: (id: string) => void; }
 type Tab = 'info' | 'komin' | 'kontrola' | 'fotky' | 'dokumenty' | 'poznamky';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'info',      label: 'Info' },
   { key: 'komin',     label: 'Komíny' },
-  { key: 'kontrola',  label: 'Kontrola' },
+  { key: 'kontrola',  label: 'Kontroly' },
   { key: 'fotky',     label: 'Fotky' },
   { key: 'dokumenty', label: 'Dokumenty' },
   { key: 'poznamky',  label: 'Poznámky' },
@@ -90,10 +103,12 @@ function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: ()
           <ScrollView showsVerticalScrollIndicator={false}>
             {!d ? <Text style={{ color: C.textTertiary, textAlign: 'center', padding: S.xl }}>Formulář nebyl vyplněn</Text> : (
               <>
-                {(d.inspectorName || d.prevReportNumber) && (
+                {(d.currentTechnicianName || d.revisionReportNumber || d.inspectorName || d.prevReportNumber) && (
                   <Section title="PŘEHLED">
-                    <Row label="Technik" value={d.inspectorName} />
-                    <Row label="Předchozí zpráva" value={d.prevReportNumber} />
+                    <Row label="Aktuální technik" value={d.currentTechnicianName} />
+                    <Row label="Č. revizní zprávy" value={d.revisionReportNumber} />
+                    <Row label="Č. předchozí zprávy" value={d.prevReportNumber} />
+                    <Row label="Technik (starší)" value={d.inspectorName} />
                   </Section>
                 )}
                 {d.chimneyType && (
@@ -162,26 +177,31 @@ function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: ()
 
 // ── Záložka Komíny ─────────────────────────────────────────────────────────────
 function KominyTab({ objectId }: { objectId: string }) {
-  const [chimneys, setChimneys]     = useState<ObjectChimney[]>([]);
-  const [appliances, setAppliances] = useState<ObjectAppliance[]>([]);
-  const [addCh, setAddCh]           = useState(false);
-  const [newCh, setNewCh]           = useState({ label: '', type: '', material: '', diameter: '', totalHeight: '', notes: '' });
-  const [addApp, setAddApp]         = useState<string | null>(null); // chimneyId
-  const [newApp, setNewApp]         = useState({ label: '', name: '', type: '', power: '', location: '' });
+  const [chimneys, setChimneys]       = useState<ObjectChimney[]>([]);
+  const [appliances, setAppliances]   = useState<ObjectAppliance[]>([]);
+  const [addCh, setAddCh]             = useState(false);
+  const [expandedCh, setExpandedCh]   = useState<Set<string>>(new Set());
+  const [expandedApp, setExpandedApp] = useState<Set<string>>(new Set());
+  const [newCh, setNewCh]   = useState({ label: '', type: '', material: '', diameter: '', totalHeight: '', effectiveHeight: '', notes: '' });
+  const [addApp, setAddApp] = useState<string | null>(null);
+  const [newApp, setNewApp] = useState({ label: '', name: '', type: '', power: '', location: '', notes: '' });
 
   function load() { setChimneys(getObjectChimneys(objectId)); setAppliances(getObjectAppliances(objectId)); }
   useEffect(() => { load(); }, [objectId]);
 
+  function toggleCh(id: string) { setExpandedCh(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; }); }
+  function toggleApp(id: string) { setExpandedApp(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; }); }
+
   function saveCh() {
-    if (!newCh.label.trim()) { Alert.alert('Chyba', 'Zadejte název komína'); return; }
-    const ch: ObjectChimney = { id: uid(), objectId, label: newCh.label, type: newCh.type, manufacturer: '', model: '', material: newCh.material, isLined: false, liningMaterial: '', totalHeight: parseFloat(newCh.totalHeight) || 0, effectiveHeight: 0, diameter: parseInt(newCh.diameter) || 0, tPieceAngle: '', tPieceMaterial: '', notes: newCh.notes, sortOrder: chimneys.length, createdAt: nowISO() };
-    saveObjectChimney(ch); setNewCh({ label: '', type: '', material: '', diameter: '', totalHeight: '', notes: '' }); setAddCh(false); load();
+    if (!newCh.label.trim()) { Alert.alert('Chyba', 'Zadejte název'); return; }
+    const ch: ObjectChimney = { id: uid(), objectId, label: newCh.label, type: newCh.type, manufacturer: '', model: '', material: newCh.material, isLined: false, liningMaterial: '', totalHeight: parseFloat(newCh.totalHeight) || 0, effectiveHeight: parseFloat(newCh.effectiveHeight) || 0, diameter: parseInt(newCh.diameter) || 0, tPieceAngle: '', tPieceMaterial: '', notes: newCh.notes, sortOrder: chimneys.length, createdAt: nowISO() };
+    saveObjectChimney(ch); setNewCh({ label: '', type: '', material: '', diameter: '', totalHeight: '', effectiveHeight: '', notes: '' }); setAddCh(false); load();
   }
 
   function saveApp(chimneyId: string) {
     if (!newApp.label.trim()) { Alert.alert('Chyba', 'Zadejte název spotřebiče'); return; }
-    const app: ObjectAppliance = { id: uid(), objectId, chimneyId, label: newApp.label, name: newApp.name, type: newApp.type, power: parseFloat(newApp.power) || 0, outletDiameter: 0, location: newApp.location, notes: '', sortOrder: appliances.filter(a => a.chimneyId === chimneyId).length, createdAt: nowISO() };
-    saveObjectAppliance(app); setNewApp({ label: '', name: '', type: '', power: '', location: '' }); setAddApp(null); load();
+    const app: ObjectAppliance = { id: uid(), objectId, chimneyId, label: newApp.label, name: newApp.name, type: newApp.type, power: parseFloat(newApp.power) || 0, outletDiameter: 0, location: newApp.location, notes: newApp.notes, sortOrder: appliances.filter(a => a.chimneyId === chimneyId).length, createdAt: nowISO() };
+    saveObjectAppliance(app); setNewApp({ label: '', name: '', type: '', power: '', location: '', notes: '' }); setAddApp(null); load();
   }
 
   return (
@@ -194,10 +214,10 @@ function KominyTab({ objectId }: { objectId: string }) {
       {addCh && (
         <View style={[ds.card, { backgroundColor: C.surfaceEl }]}>
           <Text style={ds.cardLabel}>NOVÁ SPALINOVÁ CESTA</Text>
-          {[['label','Název *','Např. Komín č.1, Kouřovod kotel...'],['type','Typ','Systémový, individuální, kouřovod...'],['material','Materiál','Pálené cihly, nerez...'],['diameter','Průměr (mm)','150'],['totalHeight','Výška (m)','12'],['notes','Poznámka','']].map(([k,l,p]) => (
+          {([['label','Název *','Komín č.1, Kouřovod…'],['type','Typ','Systémový, individuální, kouřovod…'],['material','Materiál','Pálené cihly, nerez…'],['diameter','Průměr (mm)','150'],['totalHeight','Celková výška (m)','12'],['effectiveHeight','Účinná výška (m)','10'],['notes','Poznámka','']] as [string,string,string][]).map(([k,l,p]) => (
             <View key={k} style={{ marginBottom: S.sm }}>
               <Text style={ds.editLabel}>{l}</Text>
-              <TextInput style={ds.editInput} value={(newCh as any)[k]} onChangeText={v => setNewCh(prev => ({...prev,[k]:v}))} placeholder={p} placeholderTextColor={C.textTertiary} keyboardType={k === 'diameter' || k === 'totalHeight' ? 'decimal-pad' : 'default'} />
+              <TextInput style={ds.editInput} value={(newCh as any)[k]} onChangeText={v => setNewCh(prev => ({...prev,[k]:v}))} placeholder={p} placeholderTextColor={C.textTertiary} keyboardType={['diameter','totalHeight','effectiveHeight'].includes(k) ? 'decimal-pad' : 'default'} />
             </View>
           ))}
           <TouchableOpacity style={[ds.createBtn, { marginTop: S.sm }]} onPress={saveCh}>
@@ -213,17 +233,22 @@ function KominyTab({ objectId }: { objectId: string }) {
 
       {chimneys.map(ch => {
         const chApps = appliances.filter(a => a.chimneyId === ch.id);
+        const chExpanded = expandedCh.has(ch.id);
         return (
           <View key={ch.id} style={ds.card}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            {/* Hlavička komínu — kliknutelná */}
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }} onPress={() => toggleCh(ch.id)}>
+              <Ionicons name={chExpanded ? 'chevron-down' : 'chevron-forward'} size={16} color={C.primary} />
               <View style={{ flex: 1 }}>
                 <Text style={{ color: C.primary, fontWeight: 'bold', fontSize: F.md }}>{ch.label}</Text>
-                {ch.type ? <Text style={ds.metaText}>{ch.type}</Text> : null}
-                <View style={{ flexDirection: 'row', gap: S.base, marginTop: 3 }}>
+                <View style={{ flexDirection: 'row', gap: S.md, marginTop: 2 }}>
+                  {ch.type ? <Text style={ds.metaText}>{ch.type}</Text> : null}
                   {ch.diameter > 0 ? <Text style={ds.metaText}>⌀ {ch.diameter} mm</Text> : null}
                   {ch.totalHeight > 0 ? <Text style={ds.metaText}>↕ {ch.totalHeight} m</Text> : null}
-                  {ch.material ? <Text style={ds.metaText}>{ch.material}</Text> : null}
                 </View>
+              </View>
+              <View style={[ds.chipTag, { backgroundColor: C.primary + '20' }]}>
+                <Text style={{ color: C.primary, fontSize: F.xs, fontWeight: 'bold' }}>{chApps.length} spotřebič{chApps.length !== 1 ? 'e/ů' : ''}</Text>
               </View>
               <TouchableOpacity onPress={() => Alert.alert('Smazat?', `"${ch.label}"`, [
                 { text: 'Zrušit', style: 'cancel' },
@@ -231,53 +256,81 @@ function KominyTab({ objectId }: { objectId: string }) {
               ])}>
                 <Ionicons name="trash-outline" size={16} color={C.error} />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
 
-            {/* Spotřebiče tohoto komína */}
-            {chApps.length > 0 && (
+            {/* Detail komínu — rozbalený */}
+            {chExpanded && (
               <View style={{ marginTop: S.sm, paddingTop: S.sm, borderTopWidth: 1, borderTopColor: C.border }}>
-                <Text style={[ds.cardLabel, { marginBottom: S.xs }]}>SPOTŘEBIČE</Text>
-                {chApps.map(app => (
-                  <View key={app.id} style={[ds.appRow]}>
-                    <Ionicons name="flame" size={14} color={C.primary} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: C.textPrimary, fontSize: F.sm, fontWeight: '500' }}>{app.label}</Text>
-                      {app.name ? <Text style={ds.metaText}>{app.name} {app.type}</Text> : null}
-                      {app.power > 0 ? <Text style={ds.metaText}>{app.power} kW</Text> : null}
-                    </View>
-                    <TouchableOpacity onPress={() => { deleteObjectAppliance(app.id); load(); }}>
-                      <Ionicons name="close-circle-outline" size={18} color={C.error} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Přidat spotřebič */}
-            {addApp === ch.id ? (
-              <View style={{ marginTop: S.sm, backgroundColor: C.surfaceEl, borderRadius: R.md, padding: S.sm }}>
-                <Text style={[ds.cardLabel, { marginBottom: S.sm }]}>NOVÝ SPOTŘEBIČ</Text>
-                {[['label','Název *','Kotel, kamna, krb...'],['name','Výrobce','Dakon, Viadrus...'],['type','Typ / model','DOR 25...'],['power','Výkon (kW)','24'],['location','Umístění','Kotelna, obývací pokoj...']].map(([k,l,p]) => (
-                  <View key={k} style={{ marginBottom: S.xs }}>
-                    <Text style={ds.editLabel}>{l}</Text>
-                    <TextInput style={ds.editInput} value={(newApp as any)[k]} onChangeText={v => setNewApp(prev => ({...prev,[k]:v}))} placeholder={p} placeholderTextColor={C.textTertiary} keyboardType={k === 'power' ? 'decimal-pad' : 'default'} />
-                  </View>
-                ))}
-                <View style={{ flexDirection: 'row', gap: S.sm, marginTop: S.sm }}>
-                  <TouchableOpacity style={{ flex: 1, padding: S.sm, borderRadius: R.md, borderWidth: 1, borderColor: C.border, alignItems: 'center' }} onPress={() => setAddApp(null)}>
-                    <Text style={{ color: C.textSecondary }}>Zrušit</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[ds.createBtn, { flex: 2 }]} onPress={() => saveApp(ch.id)}>
-                    <Ionicons name="save-outline" size={14} color="#fff" />
-                    <Text style={ds.createBtnText}>Přidat spotřebič</Text>
-                  </TouchableOpacity>
+                <View style={ds.detailGrid}>
+                  {ch.material ? <><Text style={ds.dLabel}>Materiál</Text><Text style={ds.dValue}>{ch.material}</Text></> : null}
+                  {ch.totalHeight > 0 ? <><Text style={ds.dLabel}>Celková výška</Text><Text style={ds.dValue}>{ch.totalHeight} m</Text></> : null}
+                  {ch.effectiveHeight > 0 ? <><Text style={ds.dLabel}>Účinná výška</Text><Text style={ds.dValue}>{ch.effectiveHeight} m</Text></> : null}
+                  {ch.diameter > 0 ? <><Text style={ds.dLabel}>Průměr průduchu</Text><Text style={ds.dValue}>{ch.diameter} mm</Text></> : null}
+                  {ch.tPieceAngle ? <><Text style={ds.dLabel}>T-Kus</Text><Text style={ds.dValue}>{ch.tPieceAngle}° — {ch.tPieceMaterial}</Text></> : null}
+                  {ch.isLined ? <><Text style={ds.dLabel}>Vložka</Text><Text style={ds.dValue}>Ano — {ch.liningMaterial}</Text></> : null}
+                  {ch.notes ? <><Text style={ds.dLabel}>Poznámka</Text><Text style={ds.dValue}>{ch.notes}</Text></> : null}
                 </View>
+
+                {/* Spotřebiče */}
+                <Text style={[ds.cardLabel, { marginTop: S.sm, marginBottom: S.xs }]}>SPOTŘEBIČE ({chApps.length})</Text>
+                {chApps.map(app => {
+                  const appExpanded = expandedApp.has(app.id);
+                  return (
+                    <View key={app.id} style={ds.appCard}>
+                      <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }} onPress={() => toggleApp(app.id)}>
+                        <Ionicons name={appExpanded ? 'chevron-down' : 'chevron-forward'} size={14} color={C.textSecondary} />
+                        <Ionicons name="flame" size={14} color={C.primary} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: C.textPrimary, fontSize: F.sm, fontWeight: '600' }}>{app.label}</Text>
+                          <Text style={ds.metaText}>{[app.name, app.type].filter(Boolean).join(' · ')}{app.power > 0 ? ` · ${app.power} kW` : ''}</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => Alert.alert('Smazat spotřebič?', `"${app.label}"`, [
+                          { text: 'Zrušit', style: 'cancel' },
+                          { text: 'Smazat', style: 'destructive', onPress: () => { deleteObjectAppliance(app.id); load(); } }
+                        ])}>
+                          <Ionicons name="close-circle-outline" size={16} color={C.error} />
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                      {appExpanded && (
+                        <View style={[ds.detailGrid, { marginTop: S.xs, paddingTop: S.xs, borderTopWidth: 1, borderTopColor: C.border + '50' }]}>
+                          {app.name ? <><Text style={ds.dLabel}>Výrobce</Text><Text style={ds.dValue}>{app.name}</Text></> : null}
+                          {app.type ? <><Text style={ds.dLabel}>Typ / model</Text><Text style={ds.dValue}>{app.type}</Text></> : null}
+                          {app.power > 0 ? <><Text style={ds.dLabel}>Výkon</Text><Text style={ds.dValue}>{app.power} kW</Text></> : null}
+                          {app.location ? <><Text style={ds.dLabel}>Umístění</Text><Text style={ds.dValue}>{app.location}</Text></> : null}
+                          {app.notes ? <><Text style={ds.dLabel}>Poznámka</Text><Text style={ds.dValue}>{app.notes}</Text></> : null}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+
+                {/* Přidat spotřebič */}
+                {addApp === ch.id ? (
+                  <View style={{ backgroundColor: C.surfaceEl, borderRadius: R.md, padding: S.sm, marginTop: S.sm }}>
+                    <Text style={[ds.cardLabel, { marginBottom: S.sm }]}>NOVÝ SPOTŘEBIČ</Text>
+                    {([['label','Název *','Kotel, kamna, krb…'],['name','Výrobce','Dakon, Viadrus…'],['type','Typ / model','DOR 25…'],['power','Výkon (kW)','24'],['location','Umístění','Kotelna, obývák…'],['notes','Poznámka','']] as [string,string,string][]).map(([k,l,p]) => (
+                      <View key={k} style={{ marginBottom: S.xs }}>
+                        <Text style={ds.editLabel}>{l}</Text>
+                        <TextInput style={ds.editInput} value={(newApp as any)[k]} onChangeText={v => setNewApp(prev => ({...prev,[k]:v}))} placeholder={p} placeholderTextColor={C.textTertiary} keyboardType={k === 'power' ? 'decimal-pad' : 'default'} />
+                      </View>
+                    ))}
+                    <View style={{ flexDirection: 'row', gap: S.sm, marginTop: S.sm }}>
+                      <TouchableOpacity style={{ flex: 1, padding: S.sm, borderRadius: R.md, borderWidth: 1, borderColor: C.border, alignItems: 'center' }} onPress={() => setAddApp(null)}>
+                        <Text style={{ color: C.textSecondary }}>Zrušit</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={[ds.createBtn, { flex: 2 }]} onPress={() => saveApp(ch.id)}>
+                        <Ionicons name="save-outline" size={14} color="#fff" />
+                        <Text style={ds.createBtnText}>Přidat spotřebič</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ) : (
+                  <TouchableOpacity style={ds.addAppBtn} onPress={() => setAddApp(addApp === ch.id ? null : ch.id)}>
+                    <Ionicons name="add" size={14} color={C.primary} />
+                    <Text style={{ color: C.primary, fontSize: F.xs }}>Přidat spotřebič</Text>
+                  </TouchableOpacity>
+                )}
               </View>
-            ) : (
-              <TouchableOpacity style={[ds.addAppBtn]} onPress={() => setAddApp(ch.id)}>
-                <Ionicons name="add" size={14} color={C.primary} />
-                <Text style={{ color: C.primary, fontSize: F.xs }}>Přidat spotřebič</Text>
-              </TouchableOpacity>
             )}
           </View>
         );
@@ -429,18 +482,26 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
               : inspections.map(ins => (
                 <TouchableOpacity key={ins.id} style={ds.inspCard} onPress={() => setSelectedInsp(ins)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text style={ds.inspNum}>{ins.reportNumber}</Text>
                       <Text style={ds.inspDate}>📅 {formatDate(ins.inspectionDate)}</Text>
+                      {ins.formData?.currentTechnicianName ? <Text style={ds.inspDate}>👤 {ins.formData.currentTechnicianName}</Text> : null}
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
+                      {/* Datum expirace */}
+                      <View style={[ds.expiryBadge, isExpired(ins.inspectionDate) && { backgroundColor: C.error + '20' }]}>
+                        <Text style={[ds.expiryText, isExpired(ins.inspectionDate) && { color: C.error }]}>
+                          Platí do: {getExpiryDate(ins.inspectionDate)}
+                        </Text>
+                      </View>
+                      {/* Výsledek */}
                       <View style={[ds.resultBadge, { backgroundColor: (RESULT_COLORS[ins.result]??C.textTertiary) + '25' }]}>
                         <Text style={[ds.resultText, { color: RESULT_COLORS[ins.result]??C.textTertiary }]}>{RESULT_LABELS[ins.result]??ins.result}</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={16} color={C.textTertiary} />
                     </View>
                   </View>
-                  {ins.notes ? <Text style={ds.inspNotes} numberOfLines={2}>{ins.notes}</Text> : null}
+                  {ins.notes ? <Text style={ds.inspNotes} numberOfLines={1}>{ins.notes}</Text> : null}
                 </TouchableOpacity>
               ))
             }
@@ -524,6 +585,8 @@ const ds = StyleSheet.create({
   inspNum: { color: C.textPrimary, fontWeight: 'bold', fontSize: F.sm },
   inspDate: { color: C.textSecondary, fontSize: F.xs, marginTop: 2 },
   inspNotes: { color: C.textSecondary, fontSize: F.xs, marginTop: S.xs, fontStyle: 'italic' },
+  expiryBadge: { paddingHorizontal: S.sm, paddingVertical: 2, borderRadius: R.xl, backgroundColor: C.success + '20' },
+  expiryText: { fontSize: F.xs, fontWeight: '600', color: C.success },
   resultBadge: { paddingHorizontal: S.sm, paddingVertical: 2, borderRadius: R.xl },
   resultText: { fontSize: F.xs, fontWeight: 'bold' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: S.sm },
@@ -536,6 +599,11 @@ const ds = StyleSheet.create({
   editLabel: { color: C.textSecondary, fontSize: F.xs, marginBottom: S.xs },
   editInput: { backgroundColor: C.surfaceEl, borderRadius: R.md, color: C.textPrimary, paddingHorizontal: S.md, paddingVertical: S.sm, fontSize: F.sm, borderWidth: 1, borderColor: C.border },
   deleteBtnSm: { padding: S.md, borderRadius: R.md, borderWidth: 1, borderColor: C.error, alignItems: 'center', justifyContent: 'center' },
+  chipTag: { paddingHorizontal: S.sm, paddingVertical: 2, borderRadius: R.xl },
+  appCard: { backgroundColor: C.surfaceEl, borderRadius: R.md, padding: S.sm, marginBottom: S.xs, borderWidth: 1, borderColor: C.border + '60' },
+  detailGrid: { gap: 2 },
+  dLabel: { color: C.textSecondary, fontSize: F.xs, marginTop: 3, minWidth: 130 },
+  dValue: { color: C.textPrimary, fontSize: F.xs, fontWeight: '500' },
   detailModalBg: { flex: 1, backgroundColor: '#000c', justifyContent: 'center', padding: S.md },
   detailModal: { backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, maxHeight: '92%' },
   detailTitle: { color: C.primary, fontSize: F.xl, fontWeight: 'bold', letterSpacing: 1 },

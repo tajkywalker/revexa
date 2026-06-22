@@ -114,6 +114,8 @@ export function deleteObject(id:string) { getDb().runSync('DELETE FROM objects W
 // ─── ZPRÁVY Z KONTROL OBJEKTŮ ─────────────────────────────────────────────────
 export type InspResult = 'vyhovuje'|'nevyhovuje'|'podminecne'|'vyhovuje_po_odstraneni';
 export interface InspectionFormData {
+  // Přehled – identifikace a technik
+  currentTechnicianName:string; revisionReportNumber:string;
   prevReportNumber:string; inspectorName:string; inspectionDate:string;
   chimneyType:'systemovy'|'individualny'|''; sysManufacturer:string; sysModel:string;
   bodyMaterial:string; isInsulated:boolean; insulationType:string; isLined:boolean; liningMaterial:string;
@@ -130,6 +132,7 @@ export interface InspectionFormData {
   conclusion:'vyhovuje'|'vyhovuje_po_odstraneni'|'nevyhovuje'|'';
 }
 export const DEFAULT_FORM_DATA: InspectionFormData = {
+  currentTechnicianName:'',revisionReportNumber:'',
   prevReportNumber:'',inspectorName:'',inspectionDate:'',
   chimneyType:'',sysManufacturer:'',sysModel:'',
   bodyMaterial:'',isInsulated:false,insulationType:'',isLined:false,liningMaterial:'',
