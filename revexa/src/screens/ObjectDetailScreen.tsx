@@ -268,10 +268,6 @@ function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: ()
       </View>
     </Modal>
   );
-        </View>
-      </View>
-    </Modal>
-  );
 }
 
 // ── Záložka Komíny ─────────────────────────────────────────────────────────────
