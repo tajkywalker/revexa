@@ -108,8 +108,8 @@ function WorkRow({ label, value, onChange, detail, onDetail, detailPlaceholder }
 }
 
 // ── Sekce Přehled ──────────────────────────────────────────────────────────────
-interface PrehledProps { d: InspectionFormData; u: Upd; chimneys: ObjectChimney[]; }
-function TabPrehled({ d, u, chimneys }: PrehledProps) {
+interface PrehledProps { d: InspectionFormData; u: Upd; chimneys: ObjectChimney[]; onChimneySelect: (ch: ObjectChimney) => void; }
+function TabPrehled({ d, u, chimneys, onChimneySelect }: PrehledProps) {
   return (
     <ScrollView contentContainerStyle={f.tabContent}>
       <FSep title="TECHNIK" />
@@ -118,16 +118,16 @@ function TabPrehled({ d, u, chimneys }: PrehledProps) {
       <FSep title="IDENTIFIKACE ZPRÁVY" />
       <FRow>
         <FInput label="Číslo revizní zprávy" value={d.revisionReportNumber} onChange={v => u({ revisionReportNumber: v })} placeholder="Auto-generováno" />
-        <FInput label="Číslo předchozí zprávy" value={d.prevReportNumber} onChange={v => u({ prevReportNumber: v })} placeholder="Auto-vyplněno" />
+        <FInput label="Číslo předchozí zprávy" value={d.prevReportNumber} onChange={v => u({ prevReportNumber: v })} placeholder="Vyplní se po výběru SC" />
       </FRow>
 
-      <FSep title="SPALINOVÁ CESTA (ke které se zpráva vztahuje)" />
+      <FSep title="SPALINOVÁ CESTA (nejprve vyberte, pak se formulář předvyplní)" />
       {chimneys.length > 0 ? (
         <View style={f.field}>
-          <Text style={f.label}>Vyberte spalinovou cestu</Text>
+          <Text style={f.label}>Vyberte spalinovou cestu — data se načtou z předchozí zprávy té samé SC</Text>
           <View style={[f.pickRow, { flexWrap: 'wrap' }]}>
             {chimneys.map(ch => (
-              <TouchableOpacity key={ch.id} style={[f.pickBtn, d.chimneyLabel === ch.label && f.pickBtnActive]} onPress={() => u({ chimneyLabel: ch.label })}>
+              <TouchableOpacity key={ch.id} style={[f.pickBtn, d.chimneyLabel === ch.label && f.pickBtnActive]} onPress={() => onChimneySelect(ch)}>
                 <Text style={[f.pickText, d.chimneyLabel === ch.label && f.pickTextActive]}>{ch.label}</Text>
               </TouchableOpacity>
             ))}
@@ -412,40 +412,56 @@ export default function InspectionFormScreen({ objectId, onBack }: Props) {
     // Načti komíny objektu
     const ch = getObjectChimneys(objectId);
     setChimneys(ch);
-
     // Technik z nastavení
     const tech = getSetting('firstName') && getSetting('lastName')
       ? `${getSetting('firstName')} ${getSetting('lastName')}`
       : getSetting('firstName') ?? getSetting('lastName') ?? '';
-
-    // Předvyplnění z poslední zprávy
-    const prev = getObjectInspections(objectId)[0];
-    if (prev?.formData) {
-      const pf = prev.formData;
-      setForm({
-        ...pf,
-        // Reset polí pro novou zprávu
-        revisionReportNumber: reportNumber,
-        prevReportNumber: prev.reportNumber,
-        inspectionDate: todayISO(),
-        currentTechnicianName: tech || pf.currentTechnicianName,
-        customerSignature: '',
-        conclusion: '',
-        defects: '[]',
-        defectsFixed: '',
-      });
-    } else {
-      setForm(p => ({
-        ...p,
-        revisionReportNumber: reportNumber,
-        inspectionDate: todayISO(),
-        currentTechnicianName: tech,
-      }));
-    }
+    // Jen základní init — NEdoplňuj data z předchozí zprávy dokud uživatel nevybere SC
+    setForm(p => ({
+      ...p,
+      revisionReportNumber: reportNumber,
+      inspectionDate: todayISO(),
+      currentTechnicianName: tech,
+    }));
   }, [objectId]);
 
   function upd(partial: Partial<InspectionFormData>) {
     setForm(p => ({ ...p, ...partial }));
+  }
+
+  /**
+   * Volá se při výběru spalinové cesty v tab Přehled.
+   * Dohledá poslední zprávu té samé SC (podle chimneyLabel) a předvyplní z ní.
+   * Pokud žádná zpráva pro tuto SC neexistuje, formulář se nechá prázdný (jen SC label + technik + čísla).
+   */
+  function handleChimneySelect(chimney: ObjectChimney) {
+    const tech = form.currentTechnicianName;
+    // getObjectInspections vrací DESC — první shoda = nejnovější zpráva dané SC
+    const allInsp = getObjectInspections(objectId);
+    const prev = allInsp.find(ins => ins.formData?.chimneyLabel === chimney.label);
+    if (prev?.formData) {
+      setForm({
+        ...prev.formData,
+        revisionReportNumber: reportNumber,
+        prevReportNumber: prev.reportNumber,
+        inspectionDate: todayISO(),
+        currentTechnicianName: tech,
+        customerSignature: '',
+        conclusion: '',
+        defects: '[]',
+        defectsFixed: '',
+        chimneyLabel: chimney.label,
+      });
+    } else {
+      // Žádná předchozí zpráva pro tuto SC — začni čistý formulář
+      setForm({
+        ...DEFAULT_FORM_DATA,
+        revisionReportNumber: reportNumber,
+        inspectionDate: todayISO(),
+        currentTechnicianName: tech,
+        chimneyLabel: chimney.label,
+      });
+    }
   }
 
   function save() {
@@ -504,7 +520,7 @@ export default function InspectionFormScreen({ objectId, onBack }: Props) {
       </View>
 
       <View style={{ flex: 1 }}>
-        {tab === 'prehled'   && <TabPrehled   d={form} u={upd} chimneys={chimneys} />}
+        {tab === 'prehled'   && <TabPrehled   d={form} u={upd} chimneys={chimneys} onChimneySelect={handleChimneySelect} />}
         {tab === 'komin'     && <TabKomin     d={form} u={upd} />}
         {tab === 'kourovod'  && <TabKourovod  d={form} u={upd} />}
         {tab === 'spotrebic' && <TabSpotrebic d={form} u={upd} />}

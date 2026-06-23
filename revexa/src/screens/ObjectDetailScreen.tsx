@@ -61,44 +61,35 @@ function EditField({ label, value, onChange, keyType = 'default' }: EditFieldPro
 }
 
 // ── Detail zprávy z kontroly ──────────────────────────────────────────────────
+function DR({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <View style={ds.dRow}>
+      <Text style={ds.dLabel}>{label}</Text>
+      <Text style={ds.dValue}>{value}</Text>
+    </View>
+  );
+}
+function WorkLine({ label, value, detail }: { label: string; value: string | undefined; detail?: string }) {
+  const isYes = value === 'ano';
+  const isNo  = value === 'ne';
+  if (!isYes && !isNo) return null;
+  return (
+    <View>
+      <View style={ds.dRow}>
+        <Text style={[ds.dLabel, { flex: 1 }]}>{label}</Text>
+        <Text style={{ fontSize: F.xs, fontWeight: 'bold', color: isYes ? C.success : C.textTertiary }}>{isYes ? 'ANO' : 'NE'}</Text>
+      </View>
+      {isYes && detail ? <Text style={ds.dDetail}>{detail}</Text> : null}
+    </View>
+  );
+}
+
 function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: () => void }) {
   const d = ins.formData;
   const rc = RESULT_COLORS[ins.result] ?? C.textTertiary;
   const expired = isExpired(ins.inspectionDate);
 
-  // Pomocné komponenty – mimo render (pro klávesnici)
-  function DCard({ title, color, children }: { title: string; color?: string; children: React.ReactNode }) {
-    return (
-      <View style={[ds.dCard, color && { borderLeftColor: color, borderLeftWidth: 3 }]}>
-        <Text style={[ds.dCardTitle, color && { color }]}>{title}</Text>
-        {children}
-      </View>
-    );
-  }
-  function DR({ label, value }: { label: string; value?: string | null }) {
-    if (!value) return null;
-    return (
-      <View style={ds.dRow}>
-        <Text style={ds.dLabel}>{label}</Text>
-        <Text style={ds.dValue}>{value}</Text>
-      </View>
-    );
-  }
-  function YesNoBadge({ label, value }: { label: string; value: string | boolean | undefined }) {
-    const isYes = value === 'ano' || value === true;
-    const isNo  = value === 'ne'  || value === false;
-    if (!isYes && !isNo) return null;
-    return (
-      <View style={ds.ynRow}>
-        <Text style={ds.ynLabel}>{label}</Text>
-        <View style={[ds.ynBadge, { backgroundColor: isYes ? C.success + '25' : C.surfaceEl, borderColor: isYes ? C.success : C.border }]}>
-          <Text style={[ds.ynText, { color: isYes ? C.success : C.textTertiary }]}>{isYes ? 'ANO' : 'NE'}</Text>
-        </View>
-      </View>
-    );
-  }
-
-  // Závady
   const defects: { id: string; type: string; location: string; description: string }[] =
     d?.defects ? (() => { try { return JSON.parse(d.defects); } catch { return []; } })() : [];
 
@@ -107,28 +98,26 @@ function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: ()
       <View style={{ flex: 1, backgroundColor: C.bg }}>
 
         {/* ── Hlavička ── */}
-        <View style={[ds.dHeader, { borderBottomColor: rc }]}>
+        <View style={ds.dHeader}>
           <TouchableOpacity onPress={onClose} style={ds.dCloseBtn}>
             <Ionicons name="arrow-back-outline" size={20} color={C.textSecondary} />
             <Text style={{ color: C.textSecondary, fontSize: F.sm }}>Zpět</Text>
           </TouchableOpacity>
-
           <View style={{ flex: 1, marginHorizontal: S.base }}>
             <Text style={ds.dReportNum}>{ins.reportNumber}</Text>
-            <View style={{ flexDirection: 'row', gap: S.md, flexWrap: 'wrap' }}>
-              <Text style={{ color: C.textSecondary, fontSize: F.xs }}>📅 {formatDate(ins.inspectionDate)}</Text>
-              {d?.currentTechnicianName ? <Text style={{ color: C.textSecondary, fontSize: F.xs }}>👤 {d.currentTechnicianName}</Text> : null}
-              {d?.chimneyLabel ? <Text style={{ color: C.primary, fontSize: F.xs }}>🔥 {d.chimneyLabel}</Text> : null}
+            <View style={{ flexDirection: 'row', gap: S.lg, flexWrap: 'wrap', marginTop: 2 }}>
+              <Text style={{ color: C.textTertiary, fontSize: F.xs }}>{formatDate(ins.inspectionDate)}</Text>
+              {d?.currentTechnicianName ? <Text style={{ color: C.textTertiary, fontSize: F.xs }}>{d.currentTechnicianName}</Text> : null}
+              {d?.chimneyLabel ? <Text style={{ color: C.primary, fontSize: F.xs, fontWeight: '600' }}>{d.chimneyLabel}</Text> : null}
             </View>
           </View>
-
           <View style={{ alignItems: 'flex-end', gap: S.xs }}>
             <View style={[ds.resultBig, { backgroundColor: rc + '20', borderColor: rc }]}>
               <Text style={[ds.resultBigText, { color: rc }]}>{RESULT_LABELS[ins.result] ?? ins.result}</Text>
             </View>
-            <View style={[ds.expiryBadge, expired && { backgroundColor: C.error + '20' }]}>
-              <Text style={[ds.expiryText, expired && { color: C.error }]}>
-                {expired ? `Platnost ukončena ${getExpiryDate(ins.inspectionDate)}` : `Platí do: ${getExpiryDate(ins.inspectionDate)}`}
+            <View style={[ds.expiryBadge, expired ? { backgroundColor: C.error + '20' } : {}]}>
+              <Text style={[ds.expiryText, expired ? { color: C.error } : {}]}>
+                {expired ? `Ukončena ${getExpiryDate(ins.inspectionDate)}` : `Platí do ${getExpiryDate(ins.inspectionDate)}`}
               </Text>
             </View>
           </View>
@@ -138,128 +127,123 @@ function InspReportDetail({ ins, onClose }: { ins: ObjectInspection; onClose: ()
           <View style={ds.empty}><Ionicons name="document-outline" size={48} color={C.textTertiary} /><Text style={ds.emptyText}>Formulář nebyl vyplněn</Text></View>
         ) : (
           <ScrollView contentContainerStyle={{ padding: S.base, gap: S.md }}>
-            {/* 2-sloupcový layout */}
             <View style={{ flexDirection: 'row', gap: S.md, alignItems: 'flex-start' }}>
 
-              {/* ── LEVÝ SLOUPEC ── */}
+              {/* ── LEVÝ SLOUPEC — technická data instalace ── */}
               <View style={{ flex: 1, gap: S.md }}>
 
-                {/* Přehled */}
-                <DCard title="📋 PŘEHLED" color={C.primary}>
-                  <DR label="Aktuální technik"   value={d.currentTechnicianName} />
-                  <DR label="Č. revizní zprávy"  value={d.revisionReportNumber} />
-                  <DR label="Č. předchozí zprávy" value={d.prevReportNumber} />
-                  <DR label="Spalinová cesta"    value={d.chimneyLabel} />
-                </DCard>
+                <View style={ds.dCard}>
+                  <Text style={ds.dCardTitle}>IDENTIFIKACE</Text>
+                  <DR label="Technik"           value={d.currentTechnicianName} />
+                  <DR label="Č. zprávy"         value={d.revisionReportNumber} />
+                  <DR label="Předchozí zpráva"  value={d.prevReportNumber} />
+                  <DR label="Spalinová cesta"   value={d.chimneyLabel} />
+                </View>
 
-                {/* Komín */}
-                {d.chimneyType && (
-                  <DCard title="🏠 KOMÍN" color="#FF6B35">
-                    <DR label="Typ" value={d.chimneyType === 'systemovy' ? 'Systémový' : 'Individuální'} />
-                    <DR label="Výrobce / model" value={[d.sysManufacturer, d.sysModel].filter(Boolean).join(' ')} />
+                {d.chimneyType ? (
+                  <View style={ds.dCard}>
+                    <Text style={ds.dCardTitle}>KOMÍN</Text>
+                    <DR label="Typ"              value={d.chimneyType === 'systemovy' ? 'Systémový' : 'Individuální'} />
+                    <DR label="Výrobce / model"  value={[d.sysManufacturer, d.sysModel].filter(Boolean).join(' ') || undefined} />
                     <DR label="Materiál tělesa"  value={d.bodyMaterial} />
-                    {d.isInsulated && <DR label="Izolace" value={d.insulationType || 'Ano'} />}
-                    {d.isLined     && <DR label="Vložka"  value={d.liningMaterial  || 'Ano'} />}
-                    <DR label="Celková výška"    value={d.totalHeight    ? `${d.totalHeight} m`    : undefined} />
-                    <DR label="Účinná výška"     value={d.effectiveHeight? `${d.effectiveHeight} m`  : undefined} />
-                    <DR label="Průměr průduchu"  value={d.flueDiameter   ? `${d.flueDiameter} mm`  : undefined} />
-                    {d.tPieceAngle && <DR label="T-Kus" value={`${d.tPieceAngle}° — ${d.tPieceMaterial}`} />}
-                  </DCard>
-                )}
+                    <DR label="Izolace"          value={d.isInsulated ? (d.insulationType || 'Ano') : undefined} />
+                    <DR label="Vložka"           value={d.isLined ? (d.liningMaterial || 'Ano') : undefined} />
+                    <DR label="Celková výška"    value={d.totalHeight     ? `${d.totalHeight} m`     : undefined} />
+                    <DR label="Účinná výška"     value={d.effectiveHeight ? `${d.effectiveHeight} m` : undefined} />
+                    <DR label="Průměr průduchu"  value={d.flueDiameter    ? `${d.flueDiameter} mm`   : undefined} />
+                    <DR label="T-Kus"            value={d.tPieceAngle ? `${d.tPieceAngle}° — ${d.tPieceMaterial}` : undefined} />
+                  </View>
+                ) : null}
 
-                {/* Kouřovod */}
-                {d.kMaterial && (
-                  <DCard title="〰 KOUŘOVOD" color="#A78BFA">
+                {d.kMaterial ? (
+                  <View style={ds.dCard}>
+                    <Text style={ds.dCardTitle}>KOUŘOVOD</Text>
                     <DR label="Materiál" value={d.kMaterial} />
-                    <DR label="Délka"    value={d.kLength   ? `${d.kLength} m`   : undefined} />
-                    <DR label="Průměr"   value={d.kDiameter ? `${d.kDiameter} mm`: undefined} />
-                    <DR label="Redukce"  value={d.kHasReduction ? `${d.kReductionWhere} (${d.kReductionFrom}→${d.kReductionTo} mm)` : 'Ne'} />
+                    <DR label="Délka"    value={d.kLength   ? `${d.kLength} m`    : undefined} />
+                    <DR label="Průměr"   value={d.kDiameter ? `${d.kDiameter} mm` : undefined} />
+                    <DR label="Redukce"  value={d.kHasReduction ? `${d.kReductionWhere} (${d.kReductionFrom}→${d.kReductionTo} mm)` : undefined} />
                     <DR label="Kolena"   value={d.kElbowCount ? `${d.kElbowCount}× (${d.kElbowTypes})` : undefined} />
-                    <DR label="KO"       value={d.kHasKO ? (d.kKOWhere || 'Ano') : 'Ne'} />
-                    <DR label="Izolace"  value={d.kInsulated ? 'Ano' : 'Ne'} />
-                  </DCard>
-                )}
+                    <DR label="KO"       value={d.kHasKO ? (d.kKOWhere || 'Ano') : undefined} />
+                    <DR label="Izolace"  value={d.kInsulated ? 'Ano' : undefined} />
+                  </View>
+                ) : null}
 
-                {/* Spotřebič */}
-                {(d.appName || d.appType) && (
-                  <DCard title="🔥 SPOTŘEBIČ" color="#F59E0B">
+                {(d.appName || d.appType) ? (
+                  <View style={ds.dCard}>
+                    <Text style={ds.dCardTitle}>SPOTŘEBIČ</Text>
                     <DR label="Název / výrobce"  value={d.appName} />
                     <DR label="Typ / model"      value={d.appType} />
                     <DR label="Výrobní číslo"    value={(d as any).appSerialNumber} />
-                    <DR label="Výkon"            value={d.appPower ? `${d.appPower} kW` : undefined} />
-                    <DR label="Průměr hrdla"     value={d.appOutletDiameter ? `${d.appOutletDiameter} mm` : undefined} />
+                    <DR label="Výkon"            value={d.appPower            ? `${d.appPower} kW`            : undefined} />
+                    <DR label="Průměr hrdla"     value={d.appOutletDiameter   ? `${d.appOutletDiameter} mm`   : undefined} />
                     <DR label="Info o hrdle"     value={d.appOutletInfo} />
                     <DR label="Umístění"         value={d.appLocation} />
-                  </DCard>
-                )}
+                  </View>
+                ) : null}
+
+                {(d.appRoomLocation || d.roofAccess || d.airSupplyType || d.koLocation) ? (
+                  <View style={ds.dCard}>
+                    <Text style={ds.dCardTitle}>DODATKY</Text>
+                    <DR label="Umístění spotřebiče" value={d.appRoomLocation} />
+                    <DR label="Vybírací dvířka"     value={d.cleaningDoorLocation} />
+                    <DR label="Vymetací dvířka"     value={d.sweepingDoorLocation} />
+                    <DR label="Umístění KO"         value={d.koLocation} />
+                    <DR label="Přístup ke komínu"   value={d.roofAccess === 'vylaz' ? 'Výlez' : d.roofAccess === 'pruchod' ? 'Procházení po střeše' : undefined} />
+                    <DR label="Nášlapy"             value={d.hasFoothold ? 'Ano' : undefined} />
+                    <DR label="Kouřovod přes"       value={d.fluePassesRoom ? d.fluePassesRoomName : undefined} />
+                    <DR label="Přívod vzduchu"      value={d.airSupplyType ? `Typ ${d.airSupplyType}` : undefined} />
+                    <DR label="Utěsněné otvory"     value={d.sealedRoom ? 'Ano' : undefined} />
+                  </View>
+                ) : null}
+
               </View>
 
-              {/* ── PRAVÝ SLOUPEC ── */}
+              {/* ── PRAVÝ SLOUPEC — co bylo provedeno + závěr ── */}
               <View style={{ flex: 1, gap: S.md }}>
 
-                {/* Dodatky */}
-                {(d.appRoomLocation || d.roofAccess || d.airSupplyType || d.koLocation) && (
-                  <DCard title="📍 DODATKY" color="#6EE7B7">
-                    <DR label="Umístění spotřebiče" value={d.appRoomLocation} />
-                    <DR label="Vybírací dvířka"    value={d.cleaningDoorLocation} />
-                    <DR label="Vymetací dvířka"    value={d.sweepingDoorLocation} />
-                    <DR label="KO — umístění"      value={d.koLocation} />
-                    <DR label="Přístup ke komínu"  value={d.roofAccess === 'vylaz' ? 'Výlez' : d.roofAccess === 'pruchod' ? 'Procházení po střeše' : undefined} />
-                    <DR label="Nášlapy"            value={d.hasFoothold ? 'Ano' : undefined} />
-                    <DR label="Prochází přes"      value={d.fluePassesRoom ? d.fluePassesRoomName : undefined} />
-                    <DR label="Přívod vzduchu"     value={d.airSupplyType ? `Typ ${d.airSupplyType}` : undefined} />
-                    <DR label="Utěsněné otvory"    value={d.sealedRoom ? 'Ano' : undefined} />
-                  </DCard>
-                )}
+                <View style={ds.dCard}>
+                  <Text style={ds.dCardTitle}>PROVEDENÉ PRÁCE</Text>
+                  <WorkLine label="Prohlídka kamerou"              value={(d as any).workCamera} />
+                  <WorkLine label="Vizuální kontrola"              value={(d as any).workVisualCheck} />
+                  <WorkLine label="Servis spotřebiče / vložky"     value={(d as any).workService}          detail={(d as any).workServiceDetail} />
+                  <WorkLine label="Čistění průduchu"               value={(d as any).workCleanChimneyDuct} detail={(d as any).workCleanChimneyDuctLevel} />
+                  <WorkLine label="Čistění kouřovodu"              value={(d as any).workCleanFlue}        detail={(d as any).workCleanFlueLevel} />
+                  <WorkLine label="Čistění spotřebiče"             value={(d as any).workCleanAppliance} />
+                  <WorkLine label="Vybírání sazí a popele"         value={(d as any).workRemoveSoot} />
+                  <WorkLine label="Jiná práce"                     value={(d as any).workOther}            detail={(d as any).workOtherDetail} />
+                </View>
 
-                {/* Práce */}
-                <DCard title="🔧 PROVEDENÉ PRÁCE" color="#38BDF8">
-                  <YesNoBadge label="Prohlídka kamerou"              value={(d as any).workCamera} />
-                  <YesNoBadge label="Pravidelná vizuální kontrola"   value={(d as any).workVisualCheck} />
-                  <YesNoBadge label="Servis spotřebiče / vložky"     value={(d as any).workService} />
-                  {(d as any).workServiceDetail ? <Text style={ds.dDetail}>{(d as any).workServiceDetail}</Text> : null}
-                  <YesNoBadge label="Čistění komínového průduchu"    value={(d as any).workCleanChimneyDuct} />
-                  {(d as any).workCleanChimneyDuctLevel ? <Text style={ds.dDetail}>↳ {(d as any).workCleanChimneyDuctLevel}</Text> : null}
-                  <YesNoBadge label="Čistění kouřovodu"              value={(d as any).workCleanFlue} />
-                  {(d as any).workCleanFlueLevel ? <Text style={ds.dDetail}>↳ {(d as any).workCleanFlueLevel}</Text> : null}
-                  <YesNoBadge label="Čistění spotřebiče"             value={(d as any).workCleanAppliance} />
-                  <YesNoBadge label="Vybírání sazí a popele"         value={(d as any).workRemoveSoot} />
-                  <YesNoBadge label="Jiná práce"                     value={(d as any).workOther} />
-                  {(d as any).workOtherDetail ? <Text style={ds.dDetail}>↳ {(d as any).workOtherDetail}</Text> : null}
-                </DCard>
-
-                {/* Závady */}
-                {(defects.length > 0 || d.defectsFixed) && (
-                  <DCard title="⚠ ZÁVADY" color={C.error}>
-                    {defects.length === 0
-                      ? <Text style={{ color: C.success, fontSize: F.sm }}>✓ Žádné závady</Text>
-                      : defects.map((def, i) => (
-                        <View key={i} style={ds.dDefCard}>
-                          <Text style={{ color: C.error, fontWeight: 'bold', fontSize: F.sm }}>{def.type}</Text>
-                          {def.location ? <Text style={{ color: C.textSecondary, fontSize: F.xs }}>📍 {def.location}</Text> : null}
-                          {def.description ? <Text style={{ color: C.textTertiary, fontSize: F.xs, fontStyle: 'italic' }}>{def.description}</Text> : null}
-                        </View>
-                      ))
-                    }
+                {(defects.length > 0 || d.defectsFixed) ? (
+                  <View style={[ds.dCard, defects.length > 0 ? { borderColor: C.error + '50' } : {}]}>
+                    <Text style={[ds.dCardTitle, defects.length > 0 ? { color: C.error } : {}]}>
+                      ZÁVADY{defects.length > 0 ? ` (${defects.length})` : ''}
+                    </Text>
+                    {defects.map((def, i) => (
+                      <View key={i} style={ds.dDefCard}>
+                        <Text style={{ color: C.error, fontWeight: 'bold', fontSize: F.xs }}>{def.type}</Text>
+                        {def.location    ? <Text style={{ color: C.textSecondary, fontSize: F.xs, marginTop: 1 }}>{def.location}</Text>    : null}
+                        {def.description ? <Text style={{ color: C.textTertiary,  fontSize: F.xs, marginTop: 1, fontStyle: 'italic' }}>{def.description}</Text> : null}
+                      </View>
+                    ))}
                     {d.defectsFixed ? (
-                      <View style={[ds.dDefCard, { backgroundColor: C.success + '15', borderColor: C.success + '40' }]}>
-                        <Text style={{ color: C.success, fontWeight: 'bold', fontSize: F.xs }}>✓ ODSTRANĚNO NA MÍSTĚ</Text>
-                        <Text style={{ color: C.textSecondary, fontSize: F.xs, marginTop: 2 }}>{d.defectsFixed}</Text>
+                      <View style={{ marginTop: S.xs, paddingTop: S.xs, borderTopWidth: 1, borderTopColor: C.border }}>
+                        <Text style={{ color: C.success, fontSize: F.xs, fontWeight: 'bold', marginBottom: 2 }}>ODSTRANĚNO NA MÍSTĚ</Text>
+                        <Text style={{ color: C.textSecondary, fontSize: F.xs }}>{d.defectsFixed}</Text>
                       </View>
                     ) : null}
-                  </DCard>
-                )}
+                  </View>
+                ) : null}
 
-                {/* Závěr */}
-                <DCard title="📝 ZÁVĚR" color={rc}>
-                  <View style={[ds.conclusionBox, { backgroundColor: rc + '15', borderColor: rc }]}>
+                <View style={[ds.dCard, { borderColor: rc + '60' }]}>
+                  <Text style={[ds.dCardTitle, { color: rc }]}>ZÁVĚR</Text>
+                  <View style={[ds.conclusionBox, { backgroundColor: rc + '12', borderColor: rc }]}>
                     <Text style={[ds.conclusionBoxText, { color: rc }]}>{RESULT_LABELS[ins.result] ?? ins.result}</Text>
                   </View>
                   {d.customerSignature
-                    ? <View style={ds.sigLine}><Ionicons name="checkmark-circle" size={16} color={C.success} /><Text style={{ color: C.success, fontSize: F.xs }}>Podpis zákazníka uložen</Text></View>
-                    : <View style={ds.sigLine}><Ionicons name="close-circle-outline" size={16} color={C.textTertiary} /><Text style={{ color: C.textTertiary, fontSize: F.xs }}>Bez podpisu zákazníka</Text></View>
+                    ? <View style={ds.sigLine}><Ionicons name="checkmark-circle" size={14} color={C.success} /><Text style={{ color: C.success, fontSize: F.xs }}>Podpis zákazníka uložen</Text></View>
+                    : <View style={ds.sigLine}><Ionicons name="close-circle-outline" size={14} color={C.textTertiary} /><Text style={{ color: C.textTertiary, fontSize: F.xs }}>Bez podpisu zákazníka</Text></View>
                   }
-                </DCard>
+                </View>
 
               </View>
             </View>

@@ -180,7 +180,7 @@ export function generateReportNumber(): string {
 }
 export interface ObjectInspection { id:string; objectId:string; reportNumber:string; inspectionDate:string; result:InspResult; coMeasurement?:number; notes:string; createdAt:string; formData?:InspectionFormData; }
 export function getObjectInspections(objectId:string): ObjectInspection[] {
-  return getDb().getAllSync<any>('SELECT * FROM object_inspections WHERE objectId=? ORDER BY inspectionDate ASC',[objectId])
+  return getDb().getAllSync<any>('SELECT * FROM object_inspections WHERE objectId=? ORDER BY inspectionDate DESC, createdAt DESC',[objectId])
     .map(r=>({...r,formData:r.formData?JSON.parse(r.formData):undefined}));
 }
 export function saveObjectInspection(ins:ObjectInspection) {
