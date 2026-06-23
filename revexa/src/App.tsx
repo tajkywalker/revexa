@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { initDb, initObjectsTables, initChimneyTables, initLogTable } from './db/database';
+import { initDb, initObjectsTables, initChimneyTables, initLogTable, initSettingsTable } from './db/database';
 import { C, F } from './theme';
 import AppSidebar, { AppSection } from './components/AppSidebar';
 import OrdersScreen from './screens/OrdersScreen';
@@ -13,6 +13,7 @@ import CustomerDetailScreen from './screens/CustomerDetailScreen';
 import ObjectsScreen from './screens/ObjectsScreen';
 import ObjectDetailScreen from './screens/ObjectDetailScreen';
 import InspectionFormScreen from './screens/InspectionFormScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 export type AppView =
   | { screen: 'orders_list' }
@@ -21,11 +22,13 @@ export type AppView =
   | { screen: 'customer_detail'; customerId?: string }
   | { screen: 'objects_list' }
   | { screen: 'object_detail'; objectId: string }
-  | { screen: 'inspection_form'; objectId: string };
+  | { screen: 'inspection_form'; objectId: string }
+  | { screen: 'settings' };
 
 function sectionOf(v: AppView): AppSection {
   if (v.screen === 'orders_list'    || v.screen === 'order_detail')    return 'orders';
   if (v.screen === 'customers_list' || v.screen === 'customer_detail') return 'customers';
+  if (v.screen === 'settings') return 'settings';
   return 'objects';
 }
 
@@ -35,7 +38,7 @@ export default function App() {
   const [view, setView]       = useState<AppView>({ screen: 'orders_list' });
 
   useEffect(() => {
-    try { initDb(); initObjectsTables(); initChimneyTables(); initLogTable(); }
+    try { initDb(); initObjectsTables(); initChimneyTables(); initLogTable(); initSettingsTable(); }
     catch (e: any) { setDbError(String(e?.message ?? e)); }
     finally { setReady(true); }
   }, []);
@@ -45,6 +48,7 @@ export default function App() {
     if (section === 'orders')    go({ screen: 'orders_list' });
     if (section === 'customers') go({ screen: 'customers_list' });
     if (section === 'objects')   go({ screen: 'objects_list' });
+    if (section === 'settings')  go({ screen: 'settings' });
   }
 
   if (dbError) return (
@@ -87,6 +91,7 @@ export default function App() {
               {view.screen === 'customer_detail' && <CustomerDetailScreen customerId={(view as any).customerId} onBack={() => go({ screen: 'customers_list' })} onSelectOrder={(id) => go({ screen: 'order_detail', orderId: id })} onSelectObject={(id) => go({ screen: 'object_detail', objectId: id })} />}
               {view.screen === 'objects_list'    && <ObjectsScreen onSelectObject={(id) => go({ screen: 'object_detail', objectId: id })} />}
               {view.screen === 'object_detail'   && <ObjectDetailScreen objectId={view.objectId} onBack={() => go({ screen: 'objects_list' })} onCreateInspection={(id) => go({ screen: 'inspection_form', objectId: id })} />}
+              {view.screen === 'settings'        && <SettingsScreen />}
             </View>
           </View>
         </SafeAreaView>

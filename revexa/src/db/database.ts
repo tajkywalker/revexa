@@ -113,11 +113,14 @@ export function deleteObject(id:string) { getDb().runSync('DELETE FROM objects W
 
 // ─── ZPRÁVY Z KONTROL OBJEKTŮ ─────────────────────────────────────────────────
 export type InspResult = 'vyhovuje'|'nevyhovuje'|'podminecne'|'vyhovuje_po_odstraneni';
+export type YesNo = 'ano'|'ne'|'';
+export interface InspDefect { id:string; type:string; location:string; description:string; }
+
 export interface InspectionFormData {
   // Přehled
   currentTechnicianName:string; revisionReportNumber:string;
-  prevReportNumber:string; inspectorName:string; inspectionDate:string;
-  chimneyLabel:string;  // ke které spalinové cestě se zpráva vztahuje
+  prevReportNumber:string; inspectionDate:string;
+  chimneyLabel:string;
   // Komín
   chimneyType:'systemovy'|'individualny'|''; sysManufacturer:string; sysModel:string;
   bodyMaterial:string; isInsulated:boolean; insulationType:string; isLined:boolean; liningMaterial:string;
@@ -128,42 +131,45 @@ export interface InspectionFormData {
   kHasReduction:boolean; kReductionWhere:string; kReductionFrom:string; kReductionTo:string;
   kElbowCount:string; kElbowTypes:string; kHasKO:boolean; kKOWhere:string; kInsulated:boolean;
   // Spotřebič
-  appName:string; appType:string; appPower:string; appOutletDiameter:string; appOutletInfo:string; appLocation:string;
+  appName:string; appType:string; appSerialNumber:string; appPower:string;
+  appOutletDiameter:string; appOutletInfo:string; appLocation:string;
   // Dodatky
   appRoomLocation:string; koLocation:string; cleaningDoorLocation:string; sweepingDoorLocation:string;
   roofAccess:'vylaz'|'pruchod'|''; hasFoothold:boolean; fluePassesRoom:boolean; fluePassesRoomName:string;
   airSupplyType:'A'|'B'|'C'|''; sealedRoom:boolean;
-  // Práce provedené na místě
-  workCameraInspection:boolean;
-  workRegularCheck:boolean;
-  workService:boolean;
-  workCleanFirebox:boolean;    workCleanFireboxLevel:string;
-  workCleanFlue:boolean;       workCleanFlueLevel:string;
-  workCleanChimney:boolean;    workCleanChimneyLevel:string;
-  workOther:boolean;           workOtherDescription:string;
-  // Závady
-  defectsFound:string; defectsFixed:string;
+  // Práce (ANO/NE)
+  workCamera:YesNo;
+  workVisualCheck:YesNo;
+  workService:YesNo;         workServiceDetail:string;
+  workCleanChimneyDuct:YesNo; workCleanChimneyDuctLevel:string;
+  workCleanFlue:YesNo;        workCleanFlueLevel:string;
+  workCleanAppliance:YesNo;
+  workRemoveSoot:YesNo;
+  workOther:YesNo;            workOtherDetail:string;
+  // Závady (strukturované)
+  defects:string;       // JSON: InspDefect[]
+  defectsFixed:string;
   // Závěr
+  customerSignature:string;  // 'signed' nebo prázdné
   conclusion:'vyhovuje'|'vyhovuje_po_odstraneni'|'nevyhovuje'|'';
 }
 export const DEFAULT_FORM_DATA: InspectionFormData = {
   currentTechnicianName:'',revisionReportNumber:'',
-  prevReportNumber:'',inspectorName:'',inspectionDate:'',chimneyLabel:'',
+  prevReportNumber:'',inspectionDate:'',chimneyLabel:'',
   chimneyType:'',sysManufacturer:'',sysModel:'',
   bodyMaterial:'',isInsulated:false,insulationType:'',isLined:false,liningMaterial:'',
   totalHeight:'',effectiveHeight:'',flueDiameter:'',tPieceAngle:'',tPieceMaterial:'',
   kMaterial:'',kLength:'',kDiameter:'',kHasReduction:false,kReductionWhere:'',kReductionFrom:'',kReductionTo:'',
   kElbowCount:'',kElbowTypes:'',kHasKO:false,kKOWhere:'',kInsulated:false,
-  appName:'',appType:'',appPower:'',appOutletDiameter:'',appOutletInfo:'',appLocation:'',
+  appName:'',appType:'',appSerialNumber:'',appPower:'',appOutletDiameter:'',appOutletInfo:'',appLocation:'',
   appRoomLocation:'',koLocation:'',cleaningDoorLocation:'',sweepingDoorLocation:'',
   roofAccess:'',hasFoothold:false,fluePassesRoom:false,fluePassesRoomName:'',
   airSupplyType:'',sealedRoom:false,
-  workCameraInspection:false,workRegularCheck:false,workService:false,
-  workCleanFirebox:false,workCleanFireboxLevel:'',
-  workCleanFlue:false,workCleanFlueLevel:'',
-  workCleanChimney:false,workCleanChimneyLevel:'',
-  workOther:false,workOtherDescription:'',
-  defectsFound:'',defectsFixed:'',conclusion:'',
+  workCamera:'',workVisualCheck:'',workService:'',workServiceDetail:'',
+  workCleanChimneyDuct:'',workCleanChimneyDuctLevel:'',
+  workCleanFlue:'',workCleanFlueLevel:'',
+  workCleanAppliance:'',workRemoveSoot:'',workOther:'',workOtherDetail:'',
+  defects:'[]',defectsFixed:'',customerSignature:'',conclusion:'',
 };
 export function generateReportNumber(): string {
   const now=new Date(); const y=now.getFullYear(); const m=String(now.getMonth()+1).padStart(2,'0');
@@ -232,3 +238,20 @@ export function formatLog(log:AppLog): string {
   return parts.join('-');
 }
 export function deleteObjectInspection(id:string) { getDb().runSync('DELETE FROM object_inspections WHERE id=?',[id]); }
+
+// ─── NASTAVENÍ (key-value store) ──────────────────────────────────────────────
+export function initSettingsTable() {
+  getDb().execSync(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
+}
+export function getSetting(key: string): string | null {
+  return getDb().getFirstSync<{value:string}>('SELECT value FROM settings WHERE key=?',[key])?.value ?? null;
+}
+export function setSetting(key: string, value: string) {
+  getDb().runSync('INSERT OR REPLACE INTO settings VALUES (?,?)',[key,value]);
+}
+export function getAllSettings(): Record<string,string> {
+  const rows = getDb().getAllSync<{key:string;value:string}>('SELECT * FROM settings');
+  const result: Record<string,string> = {};
+  for (const r of rows) result[r.key] = r.value;
+  return result;
+}

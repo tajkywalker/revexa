@@ -394,9 +394,11 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
   const [notes, setNotes]               = useState('');
   const [showEdit, setShowEdit]           = useState(false);
   const [selectedInsp, setSelectedInsp]   = useState<ObjectInspection | null>(null);
-  const [menuInsp, setMenuInsp]           = useState<ObjectInspection | null>(null);
-  const [logs, setLogs]                   = useState<AppLog[]>([]);
+  const [menuInsp, setMenuInsp]             = useState<ObjectInspection | null>(null);
+  const [logs, setLogs]                     = useState<AppLog[]>([]);
   const [showOwnerTransfer, setShowOwnerTransfer] = useState(false);
+  const [deleteReason, setDeleteReason]     = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   function load() {
     const o = getObject(objectId); setObj(o);
@@ -613,20 +615,52 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
               <View style={ds.menuDivider} />
               <TouchableOpacity style={ds.menuItem} onPress={() => {
                 setMenuInsp(null);
-                Alert.prompt
-                  ? Alert.prompt('Smazat zprávu', 'Zadejte důvod smazání:', (reason) => {
-                      if (reason !== null) deleteInspection(menuInsp, reason || 'bez důvodu');
-                    })
-                  : Alert.alert('Smazat zprávu?', menuInsp.reportNumber, [
-                      { text: 'Zrušit', style: 'cancel' },
-                      { text: 'Smazat', style: 'destructive', onPress: () => deleteInspection(menuInsp, 'bez uvedení důvodu') },
-                    ]);
+                setDeleteReason('');
+                setShowDeleteModal(true);
               }}>
                 <Ionicons name="trash-outline" size={20} color={C.error} />
                 <Text style={[ds.menuItemText, { color: C.error }]}>Smazat zprávu</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
+        </Modal>
+      )}
+
+      {/* Modal pro smazání s důvodem */}
+      {showDeleteModal && menuInsp && (
+        <Modal visible transparent animationType="fade">
+          <View style={ds.menuOverlay}>
+            <View style={[ds.menuBox, { width: 380 }]}>
+              <Text style={[ds.menuTitle, { color: C.error }]}>Smazat zprávu</Text>
+              <Text style={{ color: C.textSecondary, fontSize: F.sm, marginBottom: S.md }}>{menuInsp.reportNumber} · {formatDate(menuInsp.inspectionDate)}</Text>
+              <Text style={{ color: C.textSecondary, fontSize: F.xs, marginBottom: S.xs }}>Důvod smazání *</Text>
+              <TextInput
+                style={[ds.editInput, { minHeight: 70, textAlignVertical: 'top' }]}
+                value={deleteReason}
+                onChangeText={setDeleteReason}
+                placeholder="Např. špatný podpis, chybné datum, duplicitní záznam…"
+                placeholderTextColor={C.textTertiary}
+                multiline
+                autoFocus
+              />
+              <View style={{ flexDirection: 'row', gap: S.sm, marginTop: S.md }}>
+                <TouchableOpacity style={{ flex: 1, padding: S.md, borderRadius: R.md, borderWidth: 1, borderColor: C.border, alignItems: 'center' }} onPress={() => { setShowDeleteModal(false); setMenuInsp(null); }}>
+                  <Text style={{ color: C.textSecondary }}>Zrušit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 2, padding: S.md, borderRadius: R.md, backgroundColor: C.error, alignItems: 'center' }}
+                  onPress={() => {
+                    if (!deleteReason.trim()) { Alert.alert('Chybí důvod', 'Zadejte důvod smazání'); return; }
+                    const ins = menuInsp;
+                    setShowDeleteModal(false); setMenuInsp(null);
+                    deleteInspection(ins, deleteReason);
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold' }}>Smazat zprávu</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </Modal>
       )}
     </View>

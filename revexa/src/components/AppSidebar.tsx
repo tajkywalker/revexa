@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C, F, S, R } from '../theme';
 
-export type AppSection = 'orders' | 'customers' | 'objects';
+export type AppSection = 'orders' | 'customers' | 'objects' | 'settings';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -22,7 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'objects',   label: 'Objekty',    icon: 'business-outline' },
   { id: 'catalog',   label: 'Katalog',    icon: 'book-outline',      disabled: true },
   { id: 'stats',     label: 'Statistiky', icon: 'bar-chart-outline', disabled: true },
-  { id: 'settings',  label: 'Nastavení',  icon: 'settings-outline',  disabled: true },
+  { id: 'settings',  label: 'Nastavení',  icon: 'settings-outline' },
 ];
 
 interface Props {
