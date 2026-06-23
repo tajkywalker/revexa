@@ -510,11 +510,19 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
                        <Text style={ds.inspDate}>📅 {formatDate(ins.inspectionDate)}</Text>
                      </View>
                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
-                       <View style={[ds.expiryBadge, isExpired(ins.inspectionDate) && { backgroundColor: C.error + '20' }]}>
-                         <Text style={[ds.expiryText, isExpired(ins.inspectionDate) && { color: C.error }]}>
-                           Platí do: {getExpiryDate(ins.inspectionDate)}
-                         </Text>
-                       </View>
+                       {isExpired(ins.inspectionDate) ? (
+                         <View style={[ds.expiryBadge, { backgroundColor: C.error + '20' }]}>
+                           <Text style={[ds.expiryText, { color: C.error }]}>
+                             Platnost ukončena {getExpiryDate(ins.inspectionDate)}
+                           </Text>
+                         </View>
+                       ) : (
+                         <View style={ds.expiryBadge}>
+                           <Text style={ds.expiryText}>
+                             Platí do: {getExpiryDate(ins.inspectionDate)}
+                           </Text>
+                         </View>
+                       )}
                        <View style={[ds.resultBadge, { backgroundColor: (RESULT_COLORS[ins.result]??C.textTertiary) + '25' }]}>
                          <Text style={[ds.resultText, { color: RESULT_COLORS[ins.result]??C.textTertiary }]}>{RESULT_LABELS[ins.result]??ins.result}</Text>
                        </View>
