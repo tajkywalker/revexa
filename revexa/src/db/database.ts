@@ -114,26 +114,41 @@ export function deleteObject(id:string) { getDb().runSync('DELETE FROM objects W
 // ─── ZPRÁVY Z KONTROL OBJEKTŮ ─────────────────────────────────────────────────
 export type InspResult = 'vyhovuje'|'nevyhovuje'|'podminecne'|'vyhovuje_po_odstraneni';
 export interface InspectionFormData {
-  // Přehled – identifikace a technik
+  // Přehled
   currentTechnicianName:string; revisionReportNumber:string;
   prevReportNumber:string; inspectorName:string; inspectionDate:string;
+  chimneyLabel:string;  // ke které spalinové cestě se zpráva vztahuje
+  // Komín
   chimneyType:'systemovy'|'individualny'|''; sysManufacturer:string; sysModel:string;
   bodyMaterial:string; isInsulated:boolean; insulationType:string; isLined:boolean; liningMaterial:string;
   totalHeight:string; effectiveHeight:string; flueDiameter:string;
   tPieceAngle:'45'|'90'|''; tPieceMaterial:string;
+  // Kouřovod
   kMaterial:string; kLength:string; kDiameter:string;
   kHasReduction:boolean; kReductionWhere:string; kReductionFrom:string; kReductionTo:string;
   kElbowCount:string; kElbowTypes:string; kHasKO:boolean; kKOWhere:string; kInsulated:boolean;
+  // Spotřebič
   appName:string; appType:string; appPower:string; appOutletDiameter:string; appOutletInfo:string; appLocation:string;
+  // Dodatky
   appRoomLocation:string; koLocation:string; cleaningDoorLocation:string; sweepingDoorLocation:string;
   roofAccess:'vylaz'|'pruchod'|''; hasFoothold:boolean; fluePassesRoom:boolean; fluePassesRoomName:string;
   airSupplyType:'A'|'B'|'C'|''; sealedRoom:boolean;
+  // Práce provedené na místě
+  workCameraInspection:boolean;
+  workRegularCheck:boolean;
+  workService:boolean;
+  workCleanFirebox:boolean;    workCleanFireboxLevel:string;
+  workCleanFlue:boolean;       workCleanFlueLevel:string;
+  workCleanChimney:boolean;    workCleanChimneyLevel:string;
+  workOther:boolean;           workOtherDescription:string;
+  // Závady
   defectsFound:string; defectsFixed:string;
+  // Závěr
   conclusion:'vyhovuje'|'vyhovuje_po_odstraneni'|'nevyhovuje'|'';
 }
 export const DEFAULT_FORM_DATA: InspectionFormData = {
   currentTechnicianName:'',revisionReportNumber:'',
-  prevReportNumber:'',inspectorName:'',inspectionDate:'',
+  prevReportNumber:'',inspectorName:'',inspectionDate:'',chimneyLabel:'',
   chimneyType:'',sysManufacturer:'',sysModel:'',
   bodyMaterial:'',isInsulated:false,insulationType:'',isLined:false,liningMaterial:'',
   totalHeight:'',effectiveHeight:'',flueDiameter:'',tPieceAngle:'',tPieceMaterial:'',
@@ -142,7 +157,13 @@ export const DEFAULT_FORM_DATA: InspectionFormData = {
   appName:'',appType:'',appPower:'',appOutletDiameter:'',appOutletInfo:'',appLocation:'',
   appRoomLocation:'',koLocation:'',cleaningDoorLocation:'',sweepingDoorLocation:'',
   roofAccess:'',hasFoothold:false,fluePassesRoom:false,fluePassesRoomName:'',
-  airSupplyType:'',sealedRoom:false,defectsFound:'',defectsFixed:'',conclusion:'',
+  airSupplyType:'',sealedRoom:false,
+  workCameraInspection:false,workRegularCheck:false,workService:false,
+  workCleanFirebox:false,workCleanFireboxLevel:'',
+  workCleanFlue:false,workCleanFlueLevel:'',
+  workCleanChimney:false,workCleanChimneyLevel:'',
+  workOther:false,workOtherDescription:'',
+  defectsFound:'',defectsFixed:'',conclusion:'',
 };
 export function generateReportNumber(): string {
   const now=new Date(); const y=now.getFullYear(); const m=String(now.getMonth()+1).padStart(2,'0');
@@ -184,3 +205,30 @@ export function saveObjectAppliance(a:ObjectAppliance) {
     [a.id,a.objectId,a.chimneyId,a.label,a.name,a.type,a.power,a.outletDiameter,a.location,a.notes,a.sortOrder,a.createdAt]);
 }
 export function deleteObjectAppliance(id:string) { getDb().runSync('DELETE FROM object_appliances WHERE id=?',[id]); }
+
+// ─── LOG SYSTÉM ───────────────────────────────────────────────────────────────
+function _uid(): string { return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function _ts(): string {
+  const n=new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}/${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+}
+export function initLogTable() {
+  getDb().execSync(`CREATE TABLE IF NOT EXISTS app_logs (id TEXT PRIMARY KEY, timestamp TEXT NOT NULL, technicianName TEXT, objectId TEXT, objectLabel TEXT, action TEXT NOT NULL, targetId TEXT, targetLabel TEXT, reason TEXT, createdAt TEXT NOT NULL);`);
+}
+export interface AppLog { id:string; timestamp:string; technicianName:string; objectId:string; objectLabel:string; action:string; targetId:string; targetLabel:string; reason:string; createdAt:string; }
+export function addLog(tech:string, objId:string, objLabel:string, action:string, targetId:string, targetLabel:string, reason:string='') {
+  try {
+    getDb().runSync('INSERT INTO app_logs VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [_uid(),_ts(),tech,objId,objLabel,action,targetId,targetLabel,reason,new Date().toISOString()]);
+  } catch {}
+}
+export function getLogs(objectId?:string): AppLog[] {
+  if(objectId) return getDb().getAllSync<AppLog>('SELECT * FROM app_logs WHERE objectId=? ORDER BY createdAt DESC',[objectId]);
+  return getDb().getAllSync<AppLog>('SELECT * FROM app_logs ORDER BY createdAt DESC LIMIT 1000');
+}
+// Formatování logu pro zobrazení: 2026-06-25/22:34:56-technik-objekt-akce-cíl-důvod
+export function formatLog(log:AppLog): string {
+  const parts=[log.timestamp,log.technicianName||'?',log.objectLabel||'?',log.action,log.targetLabel||'',log.reason||''].filter((p,i)=>i<4||p);
+  return parts.join('-');
+}
+export function deleteObjectInspection(id:string) { getDb().runSync('DELETE FROM object_inspections WHERE id=?',[id]); }

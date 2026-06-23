@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { initDb, initObjectsTables, initChimneyTables } from './db/database';
+import { initDb, initObjectsTables, initChimneyTables, initLogTable } from './db/database';
 import { C, F } from './theme';
 import AppSidebar, { AppSection } from './components/AppSidebar';
 import OrdersScreen from './screens/OrdersScreen';
@@ -35,7 +35,7 @@ export default function App() {
   const [view, setView]       = useState<AppView>({ screen: 'orders_list' });
 
   useEffect(() => {
-    try { initDb(); initObjectsTables(); initChimneyTables(); }
+    try { initDb(); initObjectsTables(); initChimneyTables(); initLogTable(); }
     catch (e: any) { setDbError(String(e?.message ?? e)); }
     finally { setReady(true); }
   }, []);

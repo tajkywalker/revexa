@@ -10,7 +10,7 @@ import {
 import { uid, nowISO, todayISO } from '../utils';
 
 interface Props { objectId: string; onBack: () => void; }
-type Tab = 'prehled' | 'komin' | 'kourovod' | 'spotrebic' | 'dodatky' | 'zavady' | 'zaver';
+type Tab = 'prehled' | 'komin' | 'kourovod' | 'spotrebic' | 'dodatky' | 'prace' | 'zavady' | 'zaver';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'prehled',   label: 'Přehled' },
@@ -18,6 +18,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'kourovod',  label: 'Kouřovod' },
   { key: 'spotrebic', label: 'Spotřebič' },
   { key: 'dodatky',   label: 'Dodatky' },
+  { key: 'prace',     label: 'Práce' },
   { key: 'zavady',    label: 'Závady' },
   { key: 'zaver',     label: 'Závěr' },
 ];
@@ -104,6 +105,8 @@ function TabPrehled({ d, u }: { d: InspectionFormData; u: Upd }) {
         <FInput label="Číslo revizní zprávy" value={d.revisionReportNumber} onChange={v => u({ revisionReportNumber: v })} placeholder="Např. RZ-2026-001" />
         <FInput label="Číslo předchozí zprávy" value={d.prevReportNumber} onChange={v => u({ prevReportNumber: v })} placeholder="Pokud existuje" />
       </FRow>
+      <FSep title="KE KTERÉ SPALINOVÉ CESTĚ SE ZPRÁVA VZTAHUJE" />
+      <FInput label="Název spalinové cesty / komínu" value={d.chimneyLabel} onChange={v => u({ chimneyLabel: v })} placeholder="Např. Komín pro krbovou vložku, Komín pro kotel na pelety…" />
     </ScrollView>
   );
 }
@@ -253,6 +256,73 @@ function TabDodatky({ d, u }: { d: InspectionFormData; u: Upd }) {
   );
 }
 
+// ── Sekce Práce ───────────────────────────────────────────────────────────────
+interface FCheckLevelProps { label: string; checked: boolean; onToggle: () => void; level: string; onLevel: (v: string) => void; levelLabel?: string; }
+function FCheckLevel({ label, checked, onToggle, level, onLevel, levelLabel = 'Míra zanesení / rozsah' }: FCheckLevelProps) {
+  return (
+    <View style={{ marginBottom: S.sm }}>
+      <TouchableOpacity style={f.checkRow} onPress={onToggle}>
+        <View style={[f.checkbox, checked && f.checkboxChecked]}>{checked && <Ionicons name="checkmark" size={14} color="#fff" />}</View>
+        <Text style={[f.checkLabel, checked && { color: C.textPrimary, fontWeight: '600' }]}>{label}</Text>
+      </TouchableOpacity>
+      {checked && (
+        <View style={{ marginLeft: 30, marginTop: S.xs }}>
+          <TextInput style={[f.input, { fontSize: F.xs }]} value={level} onChangeText={onLevel} placeholder={levelLabel} placeholderTextColor={C.textTertiary} />
+        </View>
+      )}
+    </View>
+  );
+}
+function FCheckSimple({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) {
+  return (
+    <TouchableOpacity style={[f.checkRow, { marginBottom: S.sm }]} onPress={onToggle}>
+      <View style={[f.checkbox, checked && f.checkboxChecked]}>{checked && <Ionicons name="checkmark" size={14} color="#fff" />}</View>
+      <Text style={[f.checkLabel, checked && { color: C.textPrimary, fontWeight: '600' }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function TabPrace({ d, u }: { d: InspectionFormData; u: Upd }) {
+  return (
+    <ScrollView contentContainerStyle={f.tabContent}>
+      <FSep title="PROHLÍDKY A SERVIS" />
+      <FCheckSimple label="Prohlídka kamerou" checked={d.workCameraInspection} onToggle={() => u({ workCameraInspection: !d.workCameraInspection })} />
+      <FCheckSimple label="Pravidelná vizuální kontrola" checked={d.workRegularCheck} onToggle={() => u({ workRegularCheck: !d.workRegularCheck })} />
+      <FCheckSimple label="Servis spotřebiče / komínové vložky" checked={d.workService} onToggle={() => u({ workService: !d.workService })} />
+
+      <FSep title="ČISTĚNÍ" />
+      <FCheckLevel
+        label="Čistění krbové vložky"
+        checked={d.workCleanFirebox} onToggle={() => u({ workCleanFirebox: !d.workCleanFirebox })}
+        level={d.workCleanFireboxLevel} onLevel={v => u({ workCleanFireboxLevel: v })}
+        levelLabel="Míra zanesení (%, popis stavu)…"
+      />
+      <FCheckLevel
+        label="Čistění kouřovodu"
+        checked={d.workCleanFlue} onToggle={() => u({ workCleanFlue: !d.workCleanFlue })}
+        level={d.workCleanFlueLevel} onLevel={v => u({ workCleanFlueLevel: v })}
+        levelLabel="Míra zanesení kouřovodu (%, popis)…"
+      />
+      <FCheckLevel
+        label="Čistění komínu"
+        checked={d.workCleanChimney} onToggle={() => u({ workCleanChimney: !d.workCleanChimney })}
+        level={d.workCleanChimneyLevel} onLevel={v => u({ workCleanChimneyLevel: v })}
+        levelLabel="Míra zanesení komínu (%, popis)…"
+      />
+
+      <FSep title="OSTATNÍ" />
+      <FCheckSimple label="Jiná práce" checked={d.workOther} onToggle={() => u({ workOther: !d.workOther })} />
+      {d.workOther && (
+        <TextInput
+          style={[f.input, { marginLeft: 30, minHeight: 60, textAlignVertical: 'top', fontSize: F.xs }]}
+          value={d.workOtherDescription} onChangeText={v => u({ workOtherDescription: v })}
+          multiline placeholder="Popište provedené práce…" placeholderTextColor={C.textTertiary}
+        />
+      )}
+    </ScrollView>
+  );
+}
+
 function TabZavady({ d, u }: { d: InspectionFormData; u: Upd }) {
   return (
     <ScrollView contentContainerStyle={f.tabContent}>
@@ -394,6 +464,7 @@ export default function InspectionFormScreen({ objectId, onBack }: Props) {
         {tab === 'kourovod'  && <TabKourovod  d={form} u={upd} />}
         {tab === 'spotrebic' && <TabSpotrebic d={form} u={upd} />}
         {tab === 'dodatky'   && <TabDodatky   d={form} u={upd} />}
+        {tab === 'prace'     && <TabPrace     d={form} u={upd} />}
         {tab === 'zavady'    && <TabZavady    d={form} u={upd} />}
         {tab === 'zaver'     && <TabZaver     d={form} u={upd} onSave={save} saving={saving} />}
       </View>

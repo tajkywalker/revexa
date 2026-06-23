@@ -4,9 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { C, F, S, R } from '../theme';
 import {
   getObject, saveObject, deleteObject, ObjectRecord,
-  getObjectInspections, ObjectInspection, InspResult, InspectionFormData,
+  getObjectInspections, deleteObjectInspection, ObjectInspection, InspResult, InspectionFormData,
   getObjectChimneys, saveObjectChimney, deleteObjectChimney, ObjectChimney,
   getObjectAppliances, saveObjectAppliance, deleteObjectAppliance, ObjectAppliance,
+  addLog, getLogs, AppLog, formatLog,
 } from '../db/database';
 import { uid, nowISO, formatDate } from '../utils';
 
@@ -24,7 +25,7 @@ function isExpired(inspectionDate: string): boolean {
 }
 
 interface Props { objectId: string; onBack: () => void; onCreateInspection: (id: string) => void; }
-type Tab = 'info' | 'komin' | 'kontrola' | 'fotky' | 'dokumenty' | 'poznamky';
+type Tab = 'info' | 'komin' | 'kontrola' | 'fotky' | 'dokumenty' | 'poznamky' | 'log';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'info',      label: 'Info' },
@@ -33,6 +34,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'fotky',     label: 'Fotky' },
   { key: 'dokumenty', label: 'Dokumenty' },
   { key: 'poznamky',  label: 'Poznámky' },
+  { key: 'log',       label: 'Log' },
 ];
 
 const RESULT_LABELS: Record<string,string> = { vyhovuje:'VYHOVUJE', podminecne:'PODMÍNEČNĚ', nevyhovuje:'NEVYHOVUJE', vyhovuje_po_odstraneni:'VYHOVUJE PO ODSTRANĚNÍ' };
@@ -390,14 +392,27 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
   const [tab, setTab]                   = useState<Tab>('info');
   const [inspections, setInspections]   = useState<ObjectInspection[]>([]);
   const [notes, setNotes]               = useState('');
-  const [showEdit, setShowEdit]         = useState(false);
-  const [selectedInsp, setSelectedInsp] = useState<ObjectInspection | null>(null);
+  const [showEdit, setShowEdit]           = useState(false);
+  const [selectedInsp, setSelectedInsp]   = useState<ObjectInspection | null>(null);
+  const [menuInsp, setMenuInsp]           = useState<ObjectInspection | null>(null);
+  const [logs, setLogs]                   = useState<AppLog[]>([]);
+  const [showOwnerTransfer, setShowOwnerTransfer] = useState(false);
 
   function load() {
     const o = getObject(objectId); setObj(o);
-    if (o) { setNotes(o.notes ?? ''); setInspections(getObjectInspections(objectId)); }
+    if (o) { setNotes(o.notes ?? ''); setInspections(getObjectInspections(objectId)); setLogs(getLogs(objectId)); }
   }
   useEffect(() => { load(); }, [objectId]);
+
+  function deleteInspection(ins: ObjectInspection, reason: string) {
+    deleteObjectInspection(ins.id);
+    addLog(
+      obj?.ownerFirstName ? `${obj.ownerFirstName} ${obj.ownerLastName}` : 'Technik',
+      objectId, obj ? `${obj.city}${obj.street ? '-' + obj.street : ''}` : objectId,
+      'smazal/a', ins.id, ins.reportNumber, reason
+    );
+    load();
+  }
 
   function saveNotes() {
     if (!obj) return;
@@ -482,27 +497,32 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
               : inspections.map(ins => (
                 <TouchableOpacity key={ins.id} style={ds.inspCard} onPress={() => setSelectedInsp(ins)}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={ds.inspNum}>{ins.reportNumber}</Text>
-                      <Text style={ds.inspDate}>📅 {formatDate(ins.inspectionDate)}</Text>
-                      {ins.formData?.currentTechnicianName ? <Text style={ds.inspDate}>👤 {ins.formData.currentTechnicianName}</Text> : null}
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
-                      {/* Datum expirace */}
-                      <View style={[ds.expiryBadge, isExpired(ins.inspectionDate) && { backgroundColor: C.error + '20' }]}>
-                        <Text style={[ds.expiryText, isExpired(ins.inspectionDate) && { color: C.error }]}>
-                          Platí do: {getExpiryDate(ins.inspectionDate)}
-                        </Text>
-                      </View>
-                      {/* Výsledek */}
-                      <View style={[ds.resultBadge, { backgroundColor: (RESULT_COLORS[ins.result]??C.textTertiary) + '25' }]}>
-                        <Text style={[ds.resultText, { color: RESULT_COLORS[ins.result]??C.textTertiary }]}>{RESULT_LABELS[ins.result]??ins.result}</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={C.textTertiary} />
-                    </View>
-                  </View>
-                  {ins.notes ? <Text style={ds.inspNotes} numberOfLines={1}>{ins.notes}</Text> : null}
-                </TouchableOpacity>
+                     <View style={{ flex: 1 }}>
+                       <Text style={ds.inspNum}>{ins.reportNumber}</Text>
+                       {/* Název komínu ke zprávě */}
+                       {ins.formData?.chimneyLabel
+                         ? <Text style={ds.inspChimney}>🔥 {ins.formData.chimneyLabel}</Text>
+                         : null
+                       }
+                       {ins.formData?.currentTechnicianName ? <Text style={ds.inspDate}>👤 {ins.formData.currentTechnicianName}</Text> : null}
+                       <Text style={ds.inspDate}>📅 {formatDate(ins.inspectionDate)}</Text>
+                     </View>
+                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: S.sm }}>
+                       <View style={[ds.expiryBadge, isExpired(ins.inspectionDate) && { backgroundColor: C.error + '20' }]}>
+                         <Text style={[ds.expiryText, isExpired(ins.inspectionDate) && { color: C.error }]}>
+                           Platí do: {getExpiryDate(ins.inspectionDate)}
+                         </Text>
+                       </View>
+                       <View style={[ds.resultBadge, { backgroundColor: (RESULT_COLORS[ins.result]??C.textTertiary) + '25' }]}>
+                         <Text style={[ds.resultText, { color: RESULT_COLORS[ins.result]??C.textTertiary }]}>{RESULT_LABELS[ins.result]??ins.result}</Text>
+                       </View>
+                       {/* Akční menu */}
+                       <TouchableOpacity onPress={() => setMenuInsp(ins)} style={ds.menuDotBtn}>
+                         <Ionicons name="ellipsis-vertical" size={18} color={C.textSecondary} />
+                       </TouchableOpacity>
+                     </View>
+                   </View>
+                 </TouchableOpacity>
               ))
             }
           </ScrollView>
@@ -541,6 +561,23 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
         </View>
       )}
 
+      {tab === 'log' && (
+        <ScrollView contentContainerStyle={{ padding: S.base }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: S.md }}>
+            <Text style={ds.cardLabel}>LOG AKTIVIT — pouze pro čtení</Text>
+            <Text style={{ color: C.textTertiary, fontSize: F.xs }}>{logs.length} záznamů</Text>
+          </View>
+          {logs.length === 0
+            ? <Text style={{ color: C.textTertiary, textAlign: 'center', paddingTop: 40 }}>Žádné záznamy v logu</Text>
+            : logs.map(log => (
+              <View key={log.id} style={ds.logRow}>
+                <Text style={ds.logText} selectable>{formatLog(log)}</Text>
+              </View>
+            ))
+          }
+        </ScrollView>
+      )}
+
       {showEdit && (
         <EditModal
           obj={obj}
@@ -554,6 +591,44 @@ export default function ObjectDetailScreen({ objectId, onBack, onCreateInspectio
       )}
 
       {selectedInsp && <InspReportDetail ins={selectedInsp} onClose={() => setSelectedInsp(null)} />}
+
+      {/* Akční menu zprávy */}
+      {menuInsp && (
+        <Modal visible transparent animationType="fade">
+          <TouchableOpacity style={ds.menuOverlay} activeOpacity={1} onPress={() => setMenuInsp(null)}>
+            <View style={ds.menuBox}>
+              <Text style={ds.menuTitle}>{menuInsp.reportNumber}</Text>
+              <TouchableOpacity style={ds.menuItem} onPress={() => { setSelectedInsp(menuInsp); setMenuInsp(null); }}>
+                <Ionicons name="eye-outline" size={20} color={C.textPrimary} />
+                <Text style={ds.menuItemText}>Zobrazit detail zprávy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={ds.menuItem} onPress={() => { Alert.alert('Export PDF', 'Tato funkce bude dostupná v plné verzi REVEXA.'); setMenuInsp(null); }}>
+                <Ionicons name="document-text-outline" size={20} color={C.primary} />
+                <Text style={ds.menuItemText}>Exportovat do PDF</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={ds.menuItem} onPress={() => { Alert.alert('Odeslat emailem', 'Tato funkce bude dostupná v plné verzi REVEXA.'); setMenuInsp(null); }}>
+                <Ionicons name="mail-outline" size={20} color={C.primary} />
+                <Text style={ds.menuItemText}>Odeslat na email</Text>
+              </TouchableOpacity>
+              <View style={ds.menuDivider} />
+              <TouchableOpacity style={ds.menuItem} onPress={() => {
+                setMenuInsp(null);
+                Alert.prompt
+                  ? Alert.prompt('Smazat zprávu', 'Zadejte důvod smazání:', (reason) => {
+                      if (reason !== null) deleteInspection(menuInsp, reason || 'bez důvodu');
+                    })
+                  : Alert.alert('Smazat zprávu?', menuInsp.reportNumber, [
+                      { text: 'Zrušit', style: 'cancel' },
+                      { text: 'Smazat', style: 'destructive', onPress: () => deleteInspection(menuInsp, 'bez uvedení důvodu') },
+                    ]);
+              }}>
+                <Ionicons name="trash-outline" size={20} color={C.error} />
+                <Text style={[ds.menuItemText, { color: C.error }]}>Smazat zprávu</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -613,4 +688,14 @@ const ds = StyleSheet.create({
   detailValue: { color: C.textPrimary, fontSize: F.sm, flex: 1, fontWeight: '500' },
   resultBig: { paddingHorizontal: S.md, paddingVertical: S.xs, borderRadius: R.md, borderWidth: 2 },
   resultBigText: { fontWeight: 'bold', fontSize: F.sm },
+  inspChimney: { color: C.primary, fontSize: F.xs, fontWeight: '600', marginTop: 2 },
+  menuDotBtn: { padding: 6, borderRadius: R.md, borderWidth: 1, borderColor: C.border },
+  menuOverlay: { flex: 1, backgroundColor: '#000a', justifyContent: 'center', alignItems: 'center' },
+  menuBox: { backgroundColor: C.surface, borderRadius: R.xl, padding: S.lg, width: 300, borderWidth: 1, borderColor: C.border },
+  menuTitle: { color: C.textTertiary, fontSize: F.xs, fontWeight: 'bold', letterSpacing: 1, marginBottom: S.base, textTransform: 'uppercase' },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: S.md, paddingVertical: S.md, borderRadius: R.md },
+  menuItemText: { color: C.textPrimary, fontSize: F.base },
+  menuDivider: { height: 1, backgroundColor: C.border, marginVertical: S.xs },
+  logRow: { backgroundColor: C.surfaceEl, borderRadius: R.sm, padding: S.sm, marginBottom: S.xs, borderLeftWidth: 3, borderLeftColor: C.primary + '60' },
+  logText: { color: C.textSecondary, fontSize: 10, fontFamily: 'monospace' },
 });
