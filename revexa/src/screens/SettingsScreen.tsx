@@ -102,7 +102,7 @@ export default function SettingsScreen() {
             Tyto funkce budou dostupné v plné verzi REVEXA. Razítko a podpis budou automaticky vkládány do protokolů.
           </Text>
           <View style={s.stampPlaceholder}>
-            <Ionicons name="stamp-outline" size={36} color={C.textTertiary} />
+            <Ionicons name="seal-outline" size={36} color={C.textTertiary} />
             <Text style={{ color: C.textTertiary, fontSize: F.sm, marginTop: S.sm }}>Nahrát digitální razítko</Text>
             <Text style={{ color: C.textTertiary, fontSize: F.xs }}>PNG nebo JPG, průhledné pozadí</Text>
           </View>
