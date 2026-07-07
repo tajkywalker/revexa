@@ -4,20 +4,13 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { Shield, Eye, EyeOff, Loader2, Lock, User, Smartphone } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Eye, EyeOff, Loader2, Mail, Lock } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [step, setStep]     = useState<'credentials' | '2fa'>('credentials')
   const [loading, setLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
-
-  const [form, setForm] = useState({
-    username: '',
-    password: '',
-    totp: '',
-  })
+  const [form, setForm] = useState({ username: '', password: '' })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,15 +20,8 @@ export default function LoginPage() {
       const res = await signIn('credentials', {
         username: form.username,
         password: form.password,
-        totp: form.totp,
         redirect: false,
       })
-
-      if (res?.error === 'NEEDS_2FA') {
-        setStep('2fa')
-        setLoading(false)
-        return
-      }
 
       if (res?.ok) {
         toast.success('Přihlášení úspěšné')
@@ -52,158 +38,365 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-void flex items-center justify-center p-4">
-      {/* Background glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-radial from-accent/10 via-transparent to-transparent" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+    <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
+      {/* ── Fantasy background ── */}
+      <div className="absolute inset-0 z-0">
+        {/* Night sky base */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(170deg, #0a1628 0%, #0d1f3c 20%, #0b2340 40%, #081a2e 60%, #050d1a 80%, #030810 100%)',
+          }}
+        />
+        {/* Moon / pale light top-right */}
+        <div
+          className="absolute"
+          style={{
+            top: '-10%',
+            right: '8%',
+            width: '420px',
+            height: '420px',
+            background:
+              'radial-gradient(circle, rgba(200,210,255,0.10) 0%, rgba(120,150,220,0.05) 40%, transparent 70%)',
+          }}
+        />
+        {/* Portal glow right */}
+        <div
+          className="absolute"
+          style={{
+            top: '12%',
+            right: '3%',
+            width: '340px',
+            height: '500px',
+            background:
+              'radial-gradient(ellipse, rgba(160,60,240,0.35) 0%, rgba(100,30,200,0.18) 40%, transparent 70%)',
+            filter: 'blur(12px)',
+          }}
+        />
+        <div
+          className="absolute"
+          style={{
+            top: '20%',
+            right: '5%',
+            width: '180px',
+            height: '280px',
+            background:
+              'radial-gradient(ellipse, rgba(200,100,255,0.55) 0%, rgba(150,50,240,0.30) 50%, transparent 80%)',
+            filter: 'blur(4px)',
+          }}
+        />
+        {/* Warm lantern glow bottom-left */}
+        <div
+          className="absolute"
+          style={{
+            bottom: '5%',
+            left: '4%',
+            width: '220px',
+            height: '260px',
+            background:
+              'radial-gradient(ellipse, rgba(255,180,60,0.30) 0%, rgba(220,130,30,0.12) 50%, transparent 75%)',
+            filter: 'blur(8px)',
+          }}
+        />
+        {/* House/village warm glow left */}
+        <div
+          className="absolute"
+          style={{
+            bottom: '20%',
+            left: '12%',
+            width: '280px',
+            height: '200px',
+            background:
+              'radial-gradient(ellipse, rgba(255,160,50,0.18) 0%, rgba(200,120,30,0.08) 60%, transparent 80%)',
+            filter: 'blur(16px)',
+          }}
+        />
+        {/* Water reflection shimmer */}
+        <div
+          className="absolute"
+          style={{
+            bottom: '0',
+            left: '10%',
+            width: '45%',
+            height: '35%',
+            background:
+              'linear-gradient(180deg, transparent 0%, rgba(30,60,120,0.25) 50%, rgba(20,45,90,0.35) 100%)',
+          }}
+        />
+        {/* Ground/stone path */}
+        <div
+          className="absolute bottom-0 inset-x-0"
+          style={{
+            height: '30%',
+            background:
+              'linear-gradient(0deg, rgba(20,18,14,0.9) 0%, rgba(30,28,22,0.6) 50%, transparent 100%)',
+          }}
+        />
+        {/* Tree / foliage top */}
+        <div
+          className="absolute top-0 right-0"
+          style={{
+            width: '35%',
+            height: '65%',
+            background:
+              'linear-gradient(220deg, rgba(8,20,8,0.85) 0%, rgba(10,25,10,0.5) 40%, transparent 70%)',
+          }}
+        />
+        {/* Fog / atmosphere */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 120% 80% at 50% 110%, rgba(15,30,60,0.4) 0%, transparent 70%)',
+          }}
+        />
       </div>
 
-      <div className="relative w-full max-w-md">
+      {/* ── Brushstroke gold panel ── */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <div
+          style={{
+            position: 'absolute',
+            width: '680px',
+            height: '320px',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-2.5deg)',
+            background:
+              'linear-gradient(105deg, rgba(180,120,20,0.72) 0%, rgba(210,155,35,0.82) 25%, rgba(225,175,50,0.88) 50%, rgba(200,145,30,0.80) 75%, rgba(165,110,15,0.65) 100%)',
+            borderRadius: '55% 60% 50% 65% / 40% 50% 45% 55%',
+            filter: 'blur(0px)',
+            boxShadow: '0 0 60px rgba(200,150,30,0.25), inset 0 0 40px rgba(255,220,80,0.15)',
+          }}
+        />
+        {/* Inner brushstroke texture overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '620px',
+            height: '260px',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-2.5deg)',
+            background:
+              'repeating-linear-gradient(8deg, transparent, transparent 18px, rgba(255,230,80,0.06) 18px, rgba(255,230,80,0.06) 20px)',
+            borderRadius: '55% 60% 50% 65% / 40% 50% 45% 55%',
+          }}
+        />
+      </div>
+
+      {/* ── Main form ── */}
+      <div className="relative z-20 w-full max-w-sm px-6 flex flex-col items-center">
+
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 mb-4">
-            <Shield className="w-8 h-8 text-accent" />
+        <div className="mb-8 text-center">
+          {/* Diamond ornament top */}
+          <div className="flex justify-center mb-1">
+            <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+              <path d="M14 0L28 8L14 16L0 8Z" fill="url(#dg)" opacity="0.9"/>
+              <defs>
+                <linearGradient id="dg" x1="0" y1="0" x2="28" y2="16">
+                  <stop stopColor="#f5d060"/>
+                  <stop offset="1" stopColor="#c8820a"/>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
-          <h1 className="text-3xl font-title font-bold text-white tracking-wider uppercase">
-            Serverix
+
+          {/* AUNARIA text */}
+          <h1
+            style={{
+              fontFamily: 'var(--font-oswald), sans-serif',
+              fontSize: '3.2rem',
+              fontWeight: 700,
+              letterSpacing: '0.22em',
+              lineHeight: 1,
+              background: 'linear-gradient(180deg, #ffe169 0%, #f5c030 40%, #c88820 70%, #9a6010 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: 'none',
+              filter: 'drop-shadow(0 2px 8px rgba(200,140,20,0.55))',
+            }}
+          >
+            AUNARIA
           </h1>
-          <p className="text-sm text-gray-500 mt-1 font-title tracking-widest uppercase">
-            Aunaria Admin Platform
-          </p>
+
+          {/* Separator line */}
+          <div className="flex items-center justify-center gap-2 my-1">
+            <div style={{ height: '1px', width: '40px', background: 'linear-gradient(90deg, transparent, #c88820)' }} />
+            <svg width="8" height="8" viewBox="0 0 8 8">
+              <rect x="2" y="0" width="4" height="4" fill="#f5c030" transform="rotate(45 4 4)" opacity="0.8"/>
+            </svg>
+            <p
+              style={{
+                fontFamily: 'var(--font-oswald), sans-serif',
+                fontSize: '0.70rem',
+                letterSpacing: '0.35em',
+                color: '#d4a020',
+              }}
+            >
+              HYTALE SERVER
+            </p>
+            <svg width="8" height="8" viewBox="0 0 8 8">
+              <rect x="2" y="0" width="4" height="4" fill="#f5c030" transform="rotate(45 4 4)" opacity="0.8"/>
+            </svg>
+            <div style={{ height: '1px', width: '40px', background: 'linear-gradient(90deg, #c88820, transparent)' }} />
+          </div>
         </div>
 
-        {/* Card */}
-        <div className="sx-card p-8">
-          <div className="mb-6">
-            <h2 className="text-lg font-title font-semibold text-white tracking-wide">
-              {step === 'credentials' ? 'Admin přihlášení' : 'Dvoufaktorové ověření'}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {step === 'credentials'
-                ? 'Zadejte své administrátorské přihlašovací údaje'
-                : 'Zadejte 6-místný kód z autentifikační aplikace'
-              }
-            </p>
+        {/* Form fields */}
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
+
+          {/* Email / Username */}
+          <div className="relative">
+            <Mail
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4"
+              style={{ color: 'rgba(120,80,10,0.9)' }}
+            />
+            <input
+              type="text"
+              value={form.username}
+              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+              placeholder="Email"
+              required
+              autoComplete="username"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1.5px solid rgba(100,65,5,0.7)',
+                paddingLeft: '1.6rem',
+                paddingBottom: '8px',
+                paddingTop: '4px',
+                fontSize: '1rem',
+                color: 'rgba(60,35,5,0.95)',
+                outline: 'none',
+                fontFamily: 'var(--font-roboto), sans-serif',
+              }}
+              className="placeholder-amber-900/60 focus:border-amber-700 transition-colors"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {step === 'credentials' && (
-              <>
-                <div>
-                  <label className="block text-xs font-title font-semibold tracking-widest text-gray-400 uppercase mb-1.5">
-                    Uživatelské jméno
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type="text"
-                      value={form.username}
-                      onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                      className="sx-input pl-9"
-                      placeholder="admin"
-                      required
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
+          {/* Password */}
+          <div className="relative">
+            <Lock
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4"
+              style={{ color: 'rgba(120,80,10,0.9)' }}
+            />
+            <input
+              type={showPwd ? 'text' : 'password'}
+              value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              placeholder="Password"
+              required
+              autoComplete="current-password"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '1.5px solid rgba(100,65,5,0.7)',
+                paddingLeft: '1.6rem',
+                paddingRight: '2rem',
+                paddingBottom: '8px',
+                paddingTop: '4px',
+                fontSize: '1rem',
+                color: 'rgba(60,35,5,0.95)',
+                outline: 'none',
+                fontFamily: 'var(--font-roboto), sans-serif',
+              }}
+              className="placeholder-amber-900/60 focus:border-amber-700 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd(s => !s)}
+              className="absolute right-0 top-1/2 -translate-y-1/2"
+              style={{ color: 'rgba(120,80,10,0.7)' }}
+            >
+              {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
 
-                <div>
-                  <label className="block text-xs font-title font-semibold tracking-widest text-gray-400 uppercase mb-1.5">
-                    Heslo
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <input
-                      type={showPwd ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                      className="sx-input pl-9 pr-10"
-                      placeholder="••••••••"
-                      required
-                      autoComplete="current-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPwd(s => !s)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                    >
-                      {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {step === '2fa' && (
-              <div>
-                <label className="block text-xs font-title font-semibold tracking-widest text-gray-400 uppercase mb-1.5">
-                  2FA Kód
-                </label>
-                <div className="relative">
-                  <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input
-                    type="text"
-                    value={form.totp}
-                    onChange={e => setForm(f => ({ ...f, totp: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
-                    className="sx-input pl-9 text-center text-xl tracking-[0.5em] font-mono"
-                    placeholder="000000"
-                    maxLength={6}
-                    autoFocus
-                    required
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setStep('credentials')}
-                  className="mt-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  ← Zpět
-                </button>
-              </div>
-            )}
-
+          {/* LOGIN button */}
+          <div className="pt-3">
             <button
               type="submit"
               disabled={loading}
-              className={cn(
-                'sx-btn-primary w-full justify-center mt-2',
-                loading && 'opacity-70 cursor-not-allowed'
-              )}
+              style={{
+                width: '100%',
+                padding: '12px 0',
+                background: 'rgba(25,18,8,0.88)',
+                border: 'none',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-oswald), sans-serif',
+                fontSize: '1rem',
+                fontWeight: 700,
+                letterSpacing: '0.25em',
+                color: '#e8d5a0',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
             >
               {loading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Přihlašování...</>
               ) : (
-                <><Shield className="w-4 h-4" />
-                  {step === 'credentials' ? 'Přihlásit se' : 'Ověřit'}
-                </>
+                'LOGIN'
               )}
             </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-white/[0.06]" />
-            <span className="text-xs text-gray-600">nebo</span>
-            <div className="flex-1 h-px bg-white/[0.06]" />
           </div>
 
-          {/* Discord login */}
-          <button
-            onClick={() => signIn('discord', { callbackUrl: '/dashboard' })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-                       bg-[#5865F2]/10 hover:bg-[#5865F2]/20 border border-[#5865F2]/20
-                       text-[#7289DA] text-sm font-semibold transition-all"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.045.03.06a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.995a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-            </svg>
-            Přihlásit přes Discord
-          </button>
-        </div>
+          {/* Forgot password */}
+          <div className="text-center pt-1">
+            <a
+              href="#"
+              style={{
+                fontSize: '0.78rem',
+                color: 'rgba(160,100,10,0.85)',
+                fontFamily: 'var(--font-roboto), sans-serif',
+                textDecoration: 'none',
+              }}
+              className="hover:opacity-80 transition-opacity"
+            >
+              Forgot your password?
+            </a>
+          </div>
+        </form>
+      </div>
 
-        <p className="text-center text-xs text-gray-600 mt-6">
-          Walker Crew Studio © {new Date().getFullYear()} — Serverix v1.0
+      {/* ── Walker Crew Studio footer ── */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+        {/* Walker W logo */}
+        <svg width="32" height="22" viewBox="0 0 32 22" fill="none">
+          <path
+            d="M1 1L7 21L12 10L16 18L20 10L25 21L31 1"
+            stroke="url(#wg)"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <defs>
+            <linearGradient id="wg" x1="0" y1="0" x2="32" y2="22">
+              <stop stopColor="#d4a020"/>
+              <stop offset="1" stopColor="#8a6010"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <p
+          style={{
+            fontFamily: 'var(--font-oswald), sans-serif',
+            fontSize: '0.60rem',
+            letterSpacing: '0.30em',
+            color: 'rgba(180,130,30,0.70)',
+          }}
+        >
+          CREATED BY WALKER CREW STUDIO
         </p>
       </div>
     </div>
