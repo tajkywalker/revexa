@@ -1,0 +1,442 @@
+// ═══════════════════════════════════════════════════════
+//  Serverix — Prisma Schema
+//  Aunaria Hytale Server Admin Platform
+//  Walker Crew Studio
+// ═══════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────
+
+enum AdminRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  HELPER
+  BUILDER
+  DEVELOPER
+}
+
+enum PlayerStatus {
+  ACTIVE
+  BANNED
+  MUTED
+  WARNED
+  INACTIVE
+}
+
+enum VipRank {
+  NONE
+  VIP_1
+  VIP_2
+  VIP_3
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_PLAYER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  GENERAL
+  BAN_APPEAL
+  BUG_REPORT
+  PURCHASE_ISSUE
+  GRIEF_REPORT
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportReason {
+  HACKING
+  GRIEFING
+  HARASSMENT
+  SPAM
+  INAPPROPRIATE_NAME
+  EXPLOIT
+  OTHER
+}
+
+enum RecruitmentStatus {
+  OPEN
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum RecruitmentPosition {
+  MODERATOR
+  HELPER
+  BUILDER
+  DEVELOPER
+  CONTENT_CREATOR
+  GRAPHIC_DESIGNER
+}
+
+enum PunishmentType {
+  BAN
+  MUTE
+  KICK
+  WARN
+  TEMP_BAN
+  TEMP_MUTE
+}
+
+enum GameServer {
+  SURVIVAL
+  SLIMEFUN
+  SKYBLOCK
+  LOBBY
+  CREATIVE
+}
+
+// ─── Admin Users (Serverix access) ────────────────────
+
+model AdminUser {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  password      String    // bcrypt hash
+  role          AdminRole @default(HELPER)
+  twoFactorSecret String?
+  twoFactorEnabled Boolean @default(false)
+  avatar        String?
+  discordId     String?   @unique
+  lastLogin     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  sessions      AdminSession[]
+  ticketReplies TicketReply[]
+  resolvedTickets Ticket[]    @relation("ResolvedBy")
+  handledReports  Report[]    @relation("HandledBy")
+  punishmentsGiven Punishment[] @relation("IssuedBy")
+  recruitmentReviews Recruitment[] @relation("ReviewedBy")
+  auditLogs     AuditLog[]
+
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id        String    @id @default(cuid())
+  adminId   String
+  token     String    @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_sessions")
+}
+
+// ─── Hytale Players ───────────────────────────────────
+
+model Player {
+  id            String       @id @default(cuid())
+  hytaleUuid    String       @unique
+  username      String       @unique
+  displayName   String?
+  status        PlayerStatus @default(ACTIVE)
+  vipRank       VipRank      @default(NONE)
+  vipExpiresAt  DateTime?
+
+  // Linked accounts
+  discordId     String?      @unique
+  discordUsername String?
+  email         String?      @unique
+
+  // Stats
+  totalPlaytime Int          @default(0) // minutes
+  firstJoin     DateTime?
+  lastSeen      DateTime?
+  totalVotes    Int          @default(0)
+  totalDeaths   Int          @default(0)
+
+  // Economy
+  balance       Float        @default(0)
+  totalSpent    Float        @default(0) // EUR
+
+  // IP tracking (for moderation)
+  lastIpAddress String?
+  ipHistory     String[]
+
+  // Profile
+  bio           String?      @db.Text
+  avatarUrl     String?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relations
+  tickets       Ticket[]
+  reports       Report[]     @relation("ReportedBy")
+  reportedIn    Report[]     @relation("ReportTarget")
+  punishments   Punishment[]
+  gameStats     PlayerGameStat[]
+  recruitments  Recruitment[]
+  transactions  Transaction[]
+  notes         PlayerNote[]
+
+  @@index([username])
+  @@index([status])
+  @@index([vipRank])
+  @@map("players")
+}
+
+model PlayerGameStat {
+  id          String     @id @default(cuid())
+  playerId    String
+  server      GameServer
+  playtime    Int        @default(0) // minutes
+  kills       Int        @default(0)
+  deaths      Int        @default(0)
+  blocksPlaced Int       @default(0)
+  blocksBroken Int       @default(0)
+  updatedAt   DateTime   @updatedAt
+
+  player      Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, server])
+  @@map("player_game_stats")
+}
+
+model PlayerNote {
+  id        String    @id @default(cuid())
+  playerId  String
+  content   String    @db.Text
+  authorId  String
+  createdAt DateTime  @default(now())
+
+  player    Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("player_notes")
+}
+
+// ─── Punishments ──────────────────────────────────────
+
+model Punishment {
+  id          String         @id @default(cuid())
+  playerId    String
+  type        PunishmentType
+  reason      String         @db.Text
+  issuedById  String
+  isActive    Boolean        @default(true)
+  expiresAt   DateTime?      // null = permanent
+  revokedAt   DateTime?
+  revokedById String?
+
+  createdAt   DateTime       @default(now())
+
+  player      Player         @relation(fields: [playerId], references: [id])
+  issuedBy    AdminUser      @relation("IssuedBy", fields: [issuedById], references: [id])
+
+  @@index([playerId])
+  @@index([type])
+  @@index([isActive])
+  @@map("punishments")
+}
+
+// ─── Tickets ──────────────────────────────────────────
+
+model Ticket {
+  id            String          @id @default(cuid())
+  ticketNumber  Int             @unique @default(autoincrement())
+  subject       String
+  status        TicketStatus    @default(OPEN)
+  priority      TicketPriority  @default(MEDIUM)
+  category      TicketCategory  @default(GENERAL)
+
+  playerId      String
+  assignedToId  String?
+  resolvedById  String?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  player        Player          @relation(fields: [playerId], references: [id])
+  assignedTo    AdminUser?      @relation(fields: [assignedToId], references: [id])
+  resolvedBy    AdminUser?      @relation("ResolvedBy", fields: [resolvedById], references: [id])
+  replies       TicketReply[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([playerId])
+  @@map("tickets")
+}
+
+model TicketReply {
+  id        String    @id @default(cuid())
+  ticketId  String
+  content   String    @db.Text
+  authorId  String?   // null = player
+  playerId  String?   // null = admin reply
+  isInternal Boolean  @default(false) // internal admin note
+  createdAt DateTime  @default(now())
+
+  ticket    Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author    AdminUser? @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId])
+  @@map("ticket_replies")
+}
+
+// ─── Reports ──────────────────────────────────────────
+
+model Report {
+  id              String       @id @default(cuid())
+  reportNumber    Int          @unique @default(autoincrement())
+  reason          ReportReason
+  description     String       @db.Text
+  evidence        String[]     // URLs to screenshots
+  status          ReportStatus @default(PENDING)
+
+  reportedById    String
+  targetPlayerId  String
+  handledById     String?
+  handledAt       DateTime?
+  resolution      String?      @db.Text
+
+  server          GameServer?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  reportedBy      Player       @relation("ReportedBy", fields: [reportedById], references: [id])
+  targetPlayer    Player       @relation("ReportTarget", fields: [targetPlayerId], references: [id])
+  handledBy       AdminUser?   @relation("HandledBy", fields: [handledById], references: [id])
+
+  @@index([status])
+  @@index([targetPlayerId])
+  @@map("reports")
+}
+
+// ─── Recruitments ────────────────────────────────────
+
+model Recruitment {
+  id          String              @id @default(cuid())
+  appNumber   Int                 @unique @default(autoincrement())
+  position    RecruitmentPosition
+  status      RecruitmentStatus   @default(OPEN)
+
+  playerId    String
+  reviewedById String?
+  reviewedAt  DateTime?
+  reviewNote  String?  @db.Text
+
+  // Application form
+  age         Int
+  timezone    String
+  languages   String[]
+  experience  String   @db.Text
+  motivation  String   @db.Text
+  availability String  // e.g. "10-20h/week"
+  extraInfo   String?  @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  player      Player    @relation(fields: [playerId], references: [id])
+  reviewedBy  AdminUser? @relation("ReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([status])
+  @@index([position])
+  @@map("recruitments")
+}
+
+// ─── Economy / Store ──────────────────────────────────
+
+model Transaction {
+  id          String   @id @default(cuid())
+  playerId    String
+  amount      Float    // EUR
+  currency    String   @default("EUR")
+  description String
+  itemId      String?  // purchased item/rank ID
+  status      String   @default("completed") // completed, refunded, failed
+  externalId  String?  // payment gateway ID
+  createdAt   DateTime @default(now())
+
+  player      Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId])
+  @@map("transactions")
+}
+
+// ─── Server Stats (time-series) ───────────────────────
+
+model ServerStat {
+  id          String     @id @default(cuid())
+  server      GameServer
+  playerCount Int
+  tps         Float      @default(20.0)
+  memoryUsed  Int        // MB
+  memoryTotal Int        // MB
+  cpuPercent  Float
+  recordedAt  DateTime   @default(now())
+
+  @@index([server, recordedAt])
+  @@map("server_stats")
+}
+
+// ─── Audit Log ────────────────────────────────────────
+
+model AuditLog {
+  id        String    @id @default(cuid())
+  adminId   String
+  action    String    // e.g. "BAN_PLAYER", "CLOSE_TICKET"
+  target    String?   // e.g. player UUID or ticket ID
+  details   Json?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  admin     AdminUser @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ─── Announcements ────────────────────────────────────
+
+model Announcement {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  authorId    String
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  server      GameServer?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("announcements")
+}

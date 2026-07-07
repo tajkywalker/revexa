@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --font-roboto: 'Roboto', sans-serif;
+  --font-oswald: 'Oswald', sans-serif;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-void text-gray-100 font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% -5%, rgba(123,82,244,0.12) 0%, transparent 60%);
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-deep; }
+  ::-webkit-scrollbar-thumb { @apply bg-accent rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-accent/80; }
+
+  ::selection { @apply bg-accent/30 text-white; }
+}
+
+@layer components {
+  /* Cards */
+  .sx-card {
+    @apply bg-card border border-white/[0.06] rounded-xl;
+  }
+  .sx-card-elevated {
+    @apply bg-elevated border border-white/[0.06] rounded-xl;
+  }
+
+  /* Buttons */
+  .sx-btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-title text-sm
+           font-semibold tracking-wide uppercase transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-accent/50;
+  }
+  .sx-btn-primary {
+    @apply sx-btn bg-accent hover:bg-accent/90 text-white shadow-accent
+           hover:shadow-accent-lg hover:-translate-y-px;
+  }
+  .sx-btn-secondary {
+    @apply sx-btn bg-white/[0.06] hover:bg-white/[0.1] text-gray-200
+           border border-white/[0.08] hover:border-white/[0.15];
+  }
+  .sx-btn-danger {
+    @apply sx-btn bg-red/10 hover:bg-red/20 text-red border border-red/20;
+  }
+  .sx-btn-ghost {
+    @apply sx-btn bg-transparent hover:bg-white/[0.06] text-gray-400 hover:text-gray-200;
+  }
+
+  /* Inputs */
+  .sx-input {
+    @apply w-full px-3 py-2 bg-elevated border border-white/[0.08] rounded-lg
+           text-sm text-gray-100 placeholder-gray-500
+           focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/40
+           transition-colors;
+  }
+  .sx-select {
+    @apply sx-input appearance-none cursor-pointer;
+  }
+  .sx-textarea {
+    @apply sx-input resize-y min-h-[80px];
+  }
+
+  /* Badge */
+  .sx-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs
+           font-semibold font-title tracking-wide border;
+  }
+
+  /* Table */
+  .sx-table {
+    @apply w-full text-sm;
+  }
+  .sx-table th {
+    @apply px-4 py-3 text-left text-xs font-title font-semibold tracking-widest
+           text-gray-500 uppercase border-b border-white/[0.06];
+  }
+  .sx-table td {
+    @apply px-4 py-3 border-b border-white/[0.04];
+  }
+  .sx-table tr:hover td {
+    @apply bg-white/[0.02];
+  }
+  .sx-table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* Stat card */
+  .sx-stat {
+    @apply sx-card p-5 flex flex-col gap-1;
+  }
+  .sx-stat-value {
+    @apply text-3xl font-title font-bold text-white;
+  }
+  .sx-stat-label {
+    @apply text-xs font-title tracking-widest uppercase text-gray-500;
+  }
+  .sx-stat-delta-up {
+    @apply text-xs text-green font-medium;
+  }
+  .sx-stat-delta-down {
+    @apply text-xs text-red font-medium;
+  }
+}
+
+@layer utilities {
+  .font-title { font-family: var(--font-oswald), sans-serif; }
+  .text-balance { text-wrap: balance; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
