@@ -1,0 +1,13 @@
+{
+  "TranslationProperties": {
+    "Name": "Mana Crystal",
+    "Description": "A crystallized fragment of pure magical energy. Essential catalyst for all Magic Workbench recipes. Found in magical biomes or synthesized using ancient runes."
+  },
+  "Id": "SF_Mana_Crystal",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_mana_crystal.png",
+  "Model": "Items/sf_mana_crystal/model.blockymodel",
+  "Texture": "Items/sf_mana_crystal/model_texture.png",
+  "Quality": "Uncommon",
+  "Categories": ["Items.Magic"]
+}

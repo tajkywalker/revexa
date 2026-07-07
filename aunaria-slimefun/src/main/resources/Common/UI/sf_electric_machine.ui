@@ -1,0 +1,270 @@
+// ═══════════════════════════════════════════════════════
+//  sf_electric_machine.ui
+//  Aunaria Slimefun 2.0 — Electric machine GUI
+//  Extends sf_machine_base.ui — adds energy bar + power indicator
+// ═══════════════════════════════════════════════════════
+
+$Base = "sf_machine_base.ui";
+
+@EnergyBarColor = #facc15;
+@EnergyLowColor = #ef4444;
+@PoweredColor = #4ade80;
+@UnpoweredColor = #ef4444;
+
+// Reuse base layout, add energy section
+Group #SFMachineOverlay {
+    Anchor: (Full: 0);
+    Background: #000000(0.55);
+
+    Group #SFMachinePanel {
+        Anchor: (Width: 720, Height: 500, HorizontalCenter: 0, VerticalCenter: 0);
+        Background: #0d0d1a(0.97);
+
+        Group #PanelBorderLeft {
+            Anchor: (Width: 4, Top: 0, Bottom: 0, Left: 0);
+            Background: @EnergyBarColor;
+        }
+
+        // ─── Header (same as base but tech theme) ──────
+        Group #SFHeader {
+            Anchor: (Height: 64, Left: 0, Right: 0, Top: 0);
+            Background: #090910;
+
+            Group #HeaderLine {
+                Anchor: (Height: 2, Left: 4, Right: 0, Bottom: 0);
+                Background: #2a2a40;
+            }
+
+            Image #MachineIcon {
+                Anchor: (Width: 48, Height: 48, Left: 18, VerticalCenter: 0);
+            }
+
+            Label #MachineName {
+                Anchor: (Left: 80, Right: 260, Top: 10, Height: 28);
+                Style: (FontName: "Secondary", FontSize: 22, Color: #eeeef8, LetterSpacing: 1);
+                Text: "ELECTRIC MACHINE";
+            }
+
+            Label #MachineSubtitle {
+                Anchor: (Left: 82, Right: 260, Top: 40, Height: 18);
+                Style: (FontSize: 13, Color: #7777aa);
+                Text: "Requires Energy";
+            }
+
+            // Power status indicator
+            Group #PowerIndicator {
+                Anchor: (Width: 120, Height: 30, Right: 80, VerticalCenter: 0);
+
+                Group #PowerDot {
+                    Anchor: (Width: 12, Height: 12, Left: 0, VerticalCenter: 0);
+                    Background: @PoweredColor;
+                    Style: (CornerRadius: 6);
+                }
+                Label #PowerLabel {
+                    Anchor: (Left: 18, Right: 0, VerticalCenter: 0);
+                    Style: (FontSize: 13, Color: @PoweredColor);
+                    Text: "POWERED";
+                }
+            }
+
+            TextButton #CloseBtn {
+                Anchor: (Width: 36, Height: 36, Right: 18, VerticalCenter: 0);
+                Style: (
+                    Background: #1a1a2e, HoverBackground: #2d2d4a,
+                    BorderColor: #2a2a40, BorderWidth: 1,
+                    FontSize: 18, Color: #7777aa
+                );
+                Text: "✕";
+                DataEvent: "sf_close_gui";
+            }
+        }
+
+        // ─── Energy bar (full width under header) ──────
+        Group #EnergyBar {
+            Anchor: (Height: 28, Left: 4, Right: 0, Top: 64);
+            Background: #0f0f1e;
+
+            Group #EnergyBarLine {
+                Anchor: (Height: 1, Left: 0, Right: 0, Bottom: 0);
+                Background: #1a1a30;
+            }
+
+            // Energy fill
+            Group #EnergyFill {
+                Anchor: (Left: 0, Top: 4, Bottom: 4, Width: 200);
+                Background: @EnergyBarColor;
+                Style: (CornerRadius: 2);
+            }
+
+            // Bolt icon
+            Label #EnergyIcon {
+                Anchor: (Width: 16, Height: 22, Left: 10, VerticalCenter: 0);
+                Style: (FontSize: 14, Color: @EnergyBarColor);
+                Text: "⚡";
+            }
+
+            // Energy text
+            Label #EnergyText {
+                Anchor: (Left: 30, Right: 120, Height: 18, VerticalCenter: 0);
+                Style: (FontSize: 12, Color: #facc15);
+                Text: "240 / 512 J";
+            }
+
+            // J/tick label
+            Label #EnergyRate {
+                Anchor: (Width: 120, Height: 18, Right: 10, VerticalCenter: 0);
+                Style: (FontSize: 11, Color: #777799, HorizontalAlignment: Right);
+                Text: "−24 J/tick";
+            }
+        }
+
+        // ─── Content area ──────────────────────────────
+        Group #SFContent {
+            Anchor: (Left: 4, Right: 0, Top: 92, Bottom: 64);
+
+            Group #InputZone {
+                Anchor: (Width: 200, Top: 20, Left: 20, Bottom: 20);
+
+                Label #InputLabel {
+                    Anchor: (Height: 20, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 11, Color: #7777aa, LetterSpacing: 2);
+                    Text: "INPUT";
+                }
+
+                Group #InputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 26, Bottom: 0);
+                    LayoutMode: TopLeft;
+
+                    @SlotSize = 52;
+                    @SlotGap = 6;
+
+                    @Slot = Group {
+                        Anchor: (Width: @SlotSize, Height: @SlotSize);
+                        Margin: (Right: @SlotGap, Bottom: @SlotGap);
+                        Background: #111120;
+                        Style: (BorderColor: #2a2a40, BorderWidth: 1, CornerRadius: 4);
+
+                        Image #SlotIcon { Anchor: (Full: 6); Visible: false; }
+                        Label #SlotQty {
+                            Anchor: (Width: 30, Height: 16, Right: 2, Bottom: 2);
+                            Style: (FontSize: 12, Color: #eeeef8, HorizontalAlignment: Right);
+                            Text: "";
+                        }
+                    }
+
+                    @Slot #InputSlot0 {}
+                    @Slot #InputSlot1 {}
+                    @Slot #InputSlot2 {}
+                    @Slot #InputSlot3 {}
+                    @Slot #InputSlot4 {}
+                    @Slot #InputSlot5 {}
+                }
+            }
+
+            Group #CenterZone {
+                Anchor: (Width: 200, Top: 0, Bottom: 0, HorizontalCenter: 0);
+
+                Group #ProcessArrow {
+                    Anchor: (Width: 72, Height: 72, HorizontalCenter: 0, VerticalCenter: -30);
+
+                    Image #ArrowBg {
+                        Anchor: (Full: 0);
+                        Path: "sf_process_arrow_tech.png";
+                        Tint: #1a2a3a;
+                    }
+                    Image #ArrowFill {
+                        Anchor: (Full: 0);
+                        Path: "sf_process_arrow_tech_fill.png";
+                        Tint: @EnergyBarColor;
+                    }
+                }
+
+                Group #ProgressArea {
+                    Anchor: (Height: 24, Left: 10, Right: 10, VerticalCenter: 16);
+
+                    Group #ProgressBg {
+                        Anchor: (Full: 0);
+                        Background: #111120;
+                        Style: (BorderColor: #2a2a40, BorderWidth: 1, CornerRadius: 6);
+
+                        Group #ProgressFillBar {
+                            Anchor: (Left: 0, Top: 2, Bottom: 2, Width: 0);
+                            Background: @EnergyBarColor;
+                            Style: (CornerRadius: 4);
+                        }
+                    }
+                    Label #ProgressLabel {
+                        Anchor: (Full: 0);
+                        Style: (FontSize: 11, Color: #eeeef8, HorizontalAlignment: Center, VerticalAlignment: Center);
+                        Text: "0%";
+                    }
+                }
+
+                Label #RecipeInfo {
+                    Anchor: (Height: 40, Left: 0, Right: 0, VerticalCenter: 50);
+                    Style: (FontSize: 11, Color: #7777aa, HorizontalAlignment: Center, Multiline: true);
+                    Text: "No recipe active";
+                }
+            }
+
+            Group #OutputZone {
+                Anchor: (Width: 200, Top: 20, Right: 20, Bottom: 20);
+
+                Label #OutputLabel {
+                    Anchor: (Height: 20, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 11, Color: #7777aa, LetterSpacing: 2);
+                    Text: "OUTPUT";
+                }
+
+                Group #OutputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 26, Bottom: 50);
+                    LayoutMode: TopLeft;
+
+                    @Slot #OutputSlot0 {}
+                    @Slot #OutputSlot1 {}
+                    @Slot #OutputSlot2 {}
+                    @Slot #OutputSlot3 {}
+                }
+
+                TextButton #CollectBtn {
+                    Anchor: (Height: 36, Left: 0, Right: 0, Bottom: 0);
+                    Style: (
+                        Background: #0f1f0f, HoverBackground: #1a3a1a,
+                        BorderColor: #2a5a2a, BorderWidth: 1,
+                        FontSize: 13, Color: #4ade80, LetterSpacing: 1
+                    );
+                    Text: "COLLECT ALL";
+                    DataEvent: "sf_collect_output";
+                }
+            }
+        }
+
+        // ─── Footer ────────────────────────────────────
+        Group #SFFooter {
+            Anchor: (Height: 64, Left: 4, Right: 0, Bottom: 0);
+            Background: #090910;
+
+            Group #FooterLine {
+                Anchor: (Height: 1, Left: 0, Right: 0, Top: 0);
+                Background: #1a1a30;
+            }
+
+            Label #StatusText {
+                Anchor: (Left: 20, Right: 200, VerticalCenter: 8);
+                Style: (FontSize: 13, Color: #7777aa);
+                Text: "Idle";
+            }
+
+            TextButton #RecipeBtn {
+                Anchor: (Width: 140, Height: 36, Right: 20, VerticalCenter: 6);
+                Style: (
+                    Background: #0f0f1e, HoverBackground: #1a1a2e,
+                    BorderColor: #2a2a40, BorderWidth: 1,
+                    FontSize: 13, Color: #7777aa, LetterSpacing: 1
+                );
+                Text: "RECIPES  ▸";
+                DataEvent: "sf_open_recipes";
+            }
+        }
+    }
+}

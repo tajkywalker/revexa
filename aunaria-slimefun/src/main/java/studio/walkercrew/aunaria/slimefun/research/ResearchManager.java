@@ -81,6 +81,29 @@ public class ResearchManager {
         industrial.addPrerequisite("sf_advanced_processing");
         register(industrial);
 
+        // ─── Magická větev ────────────────────────────────────────────────
+
+        // Arcane Arts Tier 1 — Magic Workbench + Cauldron
+        SlimefunResearch arcaneArts = new SlimefunResearch(
+            "sf_arcane_arts",
+            "Arcane Arts",
+            "Odemkne Magic Workbench a Alchemist's Cauldron. Vstup do magické větve SF 2.0.",
+            350, false
+        );
+        arcaneArts.addPrerequisite("sf_advanced_processing");
+        register(arcaneArts);
+
+        // Arcane Mastery Tier 3 — Arcane Forge + Crystal Infuser
+        SlimefunResearch arcaneMastery = new SlimefunResearch(
+            "sf_arcane_mastery",
+            "Arcane Mastery",
+            "Odemkne Arcane Forge a Crystal Infuser — nejsilnější magické stroje.",
+            800, false
+        );
+        arcaneMastery.addPrerequisite("sf_arcane_arts");
+        arcaneMastery.addPrerequisite("sf_industrial_automation");
+        register(arcaneMastery);
+
         plugin.getSlimefunLogger().info(
             "Výzkumný strom: registrováno " + researches.size() + " výzkumů."
         );

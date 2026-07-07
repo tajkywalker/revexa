@@ -76,13 +76,17 @@ public abstract class AbstractMachine {
 
     /**
      * Voláno když hráč klikne pravým tlačítkem na stroj.
-     * Výchozí implementace zobrazí stav stroje v chatu.
+     * Výchozí implementace otevře grafické Hytale UI (MachineGuiPage).
+     * Podtřídy mohou přepsat pro vlastní chování.
      *
      * @param player hráč
      * @param state  aktuální stav stroje
      */
     public void onInteract(Player player, MachineState state) {
-        sendStatusMessage(player, state);
+        // Otevři grafické GUI přes MachineGuiManager
+        studio.walkercrew.aunaria.slimefun.SlimefunPlugin.instance
+            .getMachineGuiManager()
+            .openGui(player, this, state);
     }
 
     // ─── Receptury ────────────────────────────────────────────────────────────

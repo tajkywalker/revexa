@@ -1,0 +1,11 @@
+{
+  "TranslationProperties": {
+    "Name": "Soul Ember",
+    "Description": "A flame imbued with life energy, harvested from the spirits of powerful Hytale creatures. Used as high-heat fuel in the Alchemist's Cauldron and as a magical catalyst."
+  },
+  "Id": "SF_Soul_Ember",
+  "MaxStack": 32,
+  "Icon": "Icons/ItemsGenerated/sf_soul_ember.png",
+  "Quality": "Rare",
+  "Categories": ["Items.Magic"]
+}

@@ -1,0 +1,250 @@
+// ═══════════════════════════════════════════════════════
+//  sf_machine_base.ui
+//  Aunaria Slimefun 2.0 — Base machine GUI template
+//  All machine GUIs extend this template via named expressions
+// ═══════════════════════════════════════════════════════
+
+@SlotSize = 52;
+@SlotGap = 6;
+@PanelBg = #0d0d1a(0.97);
+@PanelBorder = #2a1a5e;
+@SlotBg = #1a1a2e;
+@SlotBorder = #3d2f7a;
+@AccentColor = #7c3aed;
+@TextPrimary = #eeeef8;
+@TextMuted = #7777aa;
+@ProgressBg = #1a1230;
+@ProgressFill = #7c3aed;
+
+// ─── Root overlay ─────────────────────────────────────
+Group #SFMachineOverlay {
+    Anchor: (Full: 0);
+    Background: #000000(0.55);
+
+    // ─── Main panel ───────────────────────────────────
+    Group #SFMachinePanel {
+        Anchor: (Width: 680, Height: 460, HorizontalCenter: 0, VerticalCenter: 0);
+        Background: @PanelBg;
+
+        // Left border accent
+        Group #PanelBorderLeft {
+            Anchor: (Width: 4, Top: 0, Bottom: 0, Left: 0);
+            Background: @AccentColor;
+        }
+
+        // ─── Header ───────────────────────────────────
+        Group #SFHeader {
+            Anchor: (Height: 64, Left: 0, Right: 0, Top: 0);
+            Background: #0a0a18;
+
+            // Top separator line
+            Group #HeaderLine {
+                Anchor: (Height: 2, Left: 4, Right: 0, Bottom: 0);
+                Background: @PanelBorder;
+            }
+
+            // Machine icon
+            Image #MachineIcon {
+                Anchor: (Width: 48, Height: 48, Left: 18, VerticalCenter: 0);
+                Path: "sf_placeholder_icon.png";
+            }
+
+            // Machine name
+            Label #MachineName {
+                Anchor: (Left: 80, Right: 200, Top: 10, Height: 28);
+                Style: (FontName: "Secondary", FontSize: 22, Color: @TextPrimary, LetterSpacing: 1);
+                Text: "MACHINE NAME";
+            }
+
+            // Machine subtitle
+            Label #MachineSubtitle {
+                Anchor: (Left: 82, Right: 200, Top: 40, Height: 18);
+                Style: (FontSize: 13, Color: @TextMuted);
+                Text: "Slimefun 2.0";
+            }
+
+            // Close button
+            TextButton #CloseBtn {
+                Anchor: (Width: 36, Height: 36, Right: 18, VerticalCenter: 0);
+                Style: (
+                    Background: #1a0f2e,
+                    HoverBackground: #2d1a4a,
+                    PressBackground: #3d2f7a,
+                    BorderColor: @PanelBorder,
+                    BorderWidth: 1,
+                    FontSize: 18,
+                    Color: @TextMuted
+                );
+                Text: "✕";
+                DataEvent: "sf_close_gui";
+            }
+        }
+
+        // ─── Content area ──────────────────────────────
+        Group #SFContent {
+            Anchor: (Left: 4, Right: 0, Top: 64, Bottom: 64);
+
+            // LEFT: Input slots zone
+            Group #InputZone {
+                Anchor: (Width: 200, Top: 20, Bottom: 20, Left: 20);
+
+                Label #InputLabel {
+                    Anchor: (Height: 20, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 11, Color: @TextMuted, LetterSpacing: 2);
+                    Text: "INPUT";
+                }
+
+                // 3×2 input grid (6 slots)
+                Group #InputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 26, Bottom: 0);
+                    LayoutMode: TopLeft;
+
+                    @Slot = Group #Slot {
+                        Anchor: (Width: @SlotSize, Height: @SlotSize);
+                        Margin: (Right: @SlotGap, Bottom: @SlotGap);
+                        Background: @SlotBg;
+                        Style: (BorderColor: @SlotBorder, BorderWidth: 1, CornerRadius: 4);
+
+                        Image #SlotIcon {
+                            Anchor: (Full: 6);
+                            Visible: false;
+                        }
+                        Label #SlotQty {
+                            Anchor: (Width: 30, Height: 16, Right: 2, Bottom: 2);
+                            Style: (FontSize: 12, Color: @TextPrimary, HorizontalAlignment: Right);
+                            Text: "";
+                        }
+                    }
+
+                    @Slot #InputSlot0 {}
+                    @Slot #InputSlot1 {}
+                    @Slot #InputSlot2 {}
+                    @Slot #InputSlot3 {}
+                    @Slot #InputSlot4 {}
+                    @Slot #InputSlot5 {}
+                }
+            }
+
+            // CENTER: Progress indicator
+            Group #CenterZone {
+                Anchor: (Width: 180, Top: 0, Bottom: 0, HorizontalCenter: 0);
+
+                // Processing arrow / animation frame
+                Group #ProcessArrow {
+                    Anchor: (Width: 80, Height: 80, HorizontalCenter: 0, VerticalCenter: -20);
+
+                    Image #ArrowBg {
+                        Anchor: (Full: 0);
+                        Path: "sf_process_arrow.png";
+                        Tint: #2a1a5e;
+                    }
+                    Image #ArrowFill {
+                        Anchor: (Full: 0);
+                        Path: "sf_process_arrow_fill.png";
+                        Tint: @AccentColor;
+                    }
+                }
+
+                // Progress bar
+                Group #ProgressArea {
+                    Anchor: (Height: 24, Left: 10, Right: 10, VerticalCenter: 40);
+
+                    Group #ProgressBg {
+                        Anchor: (Full: 0);
+                        Background: @ProgressBg;
+                        Style: (BorderColor: @PanelBorder, BorderWidth: 1, CornerRadius: 6);
+
+                        Group #ProgressFillBar {
+                            Anchor: (Left: 0, Top: 2, Bottom: 2, Width: 0);
+                            Background: @ProgressFill;
+                            Style: (CornerRadius: 4);
+                        }
+                    }
+
+                    Label #ProgressLabel {
+                        Anchor: (Full: 0);
+                        Style: (FontSize: 11, Color: @TextPrimary, HorizontalAlignment: Center, VerticalAlignment: Center);
+                        Text: "0%";
+                    }
+                }
+
+                // Recipe preview label
+                Label #RecipeInfo {
+                    Anchor: (Height: 32, Left: 0, Right: 0, VerticalCenter: 70);
+                    Style: (FontSize: 11, Color: @TextMuted, HorizontalAlignment: Center, Multiline: true);
+                    Text: "No recipe active";
+                }
+            }
+
+            // RIGHT: Output slots zone
+            Group #OutputZone {
+                Anchor: (Width: 200, Top: 20, Bottom: 20, Right: 20);
+
+                Label #OutputLabel {
+                    Anchor: (Height: 20, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 11, Color: @TextMuted, LetterSpacing: 2);
+                    Text: "OUTPUT";
+                }
+
+                Group #OutputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 26, Bottom: 0);
+                    LayoutMode: TopLeft;
+
+                    @Slot #OutputSlot0 {}
+                    @Slot #OutputSlot1 {}
+                    @Slot #OutputSlot2 {}
+                    @Slot #OutputSlot3 {}
+                }
+
+                // Collect all button
+                TextButton #CollectBtn {
+                    Anchor: (Height: 36, Left: 0, Right: 0, Bottom: 0);
+                    Style: (
+                        Background: #1a2a1a,
+                        HoverBackground: #1e3d1e,
+                        BorderColor: #2a5a2a,
+                        BorderWidth: 1,
+                        FontSize: 13,
+                        Color: #4ade80,
+                        LetterSpacing: 1
+                    );
+                    Text: "COLLECT ALL";
+                    DataEvent: "sf_collect_output";
+                }
+            }
+        }
+
+        // ─── Footer — status bar ──────────────────────
+        Group #SFFooter {
+            Anchor: (Height: 64, Left: 4, Right: 0, Bottom: 0);
+            Background: #0a0a18;
+
+            Group #FooterLine {
+                Anchor: (Height: 2, Left: 0, Right: 0, Top: 0);
+                Background: @PanelBorder;
+            }
+
+            Label #StatusText {
+                Anchor: (Left: 20, Right: 200, VerticalCenter: 8);
+                Style: (FontSize: 13, Color: @TextMuted);
+                Text: "Idle — insert materials to begin";
+            }
+
+            // Recipe browser button
+            TextButton #RecipeBtn {
+                Anchor: (Width: 140, Height: 36, Right: 20, VerticalCenter: 6);
+                Style: (
+                    Background: #1a0f2e,
+                    HoverBackground: #2d1a4a,
+                    BorderColor: @PanelBorder,
+                    BorderWidth: 1,
+                    FontSize: 13,
+                    Color: @TextMuted,
+                    LetterSpacing: 1
+                );
+                Text: "RECIPES  ▸";
+                DataEvent: "sf_open_recipes";
+            }
+        }
+    }
+}

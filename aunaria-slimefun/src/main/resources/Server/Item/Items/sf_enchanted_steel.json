@@ -1,0 +1,13 @@
+{
+  "TranslationProperties": {
+    "Name": "Enchanted Steel",
+    "Description": "Refined Iron infused with magical energy. Base component for Tier-2 magical equipment and machine parts."
+  },
+  "Id": "SF_Enchanted_Steel",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_enchanted_steel.png",
+  "Model": "Items/sf_enchanted_steel/model.blockymodel",
+  "Texture": "Items/sf_enchanted_steel/model_texture.png",
+  "Quality": "Rare",
+  "Categories": ["Items.Magic"]
+}

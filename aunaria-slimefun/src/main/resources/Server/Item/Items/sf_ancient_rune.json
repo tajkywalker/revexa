@@ -1,0 +1,11 @@
+{
+  "TranslationProperties": {
+    "Name": "Ancient Rune",
+    "Description": "A carved magical symbol imbued with ancient power. Required for constructing Tier-3 machines and enchanting high-level equipment at the Arcane Forge."
+  },
+  "Id": "SF_Ancient_Rune",
+  "MaxStack": 32,
+  "Icon": "Icons/ItemsGenerated/sf_ancient_rune.png",
+  "Quality": "Epic",
+  "Categories": ["Items.Magic"]
+}

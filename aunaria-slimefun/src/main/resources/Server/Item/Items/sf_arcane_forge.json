@@ -1,0 +1,46 @@
+{
+  "TranslationProperties": {
+    "Name": "Arcane Forge",
+    "Description": "A massive magical forge that combines electricity and arcane energy to create Tier-3 materials. Requires 96 J/tick. The ultimate crafting station for the most powerful Slimefun 2.0 items."
+  },
+  "Id": "SF_Arcane_Forge",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_arcane_forge.png",
+  "Model": "Items/sf_arcane_forge/model.blockymodel",
+  "Texture": "Items/sf_arcane_forge/model_texture.png",
+  "Quality": "Legendary",
+  "Categories": ["Blocks.Magic"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Stone",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "SF_Arcane_Forge"
+      }
+    },
+    "BlockParticleSetId": "Fire",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_arcane_forge.png"
+      }
+    ],
+    "ParticleColor": "#dc2626",
+    "BlockSoundSetId": "Stone",
+    "BlockBreakingDecalId": "Breaking_Decals_Rock",
+    "EmissiveLight": 12
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}

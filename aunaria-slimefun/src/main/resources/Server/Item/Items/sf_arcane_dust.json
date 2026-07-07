@@ -1,0 +1,11 @@
+{
+  "TranslationProperties": {
+    "Name": "Arcane Dust",
+    "Description": "Finely ground magical powder created by the Magic Workbench. Used in alchemy recipes and as an ingredient in many Tier-2 magical crafting processes."
+  },
+  "Id": "SF_Arcane_Dust",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_arcane_dust.png",
+  "Quality": "Common",
+  "Categories": ["Items.Magic"]
+}

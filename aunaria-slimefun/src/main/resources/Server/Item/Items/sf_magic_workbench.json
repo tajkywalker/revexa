@@ -1,0 +1,46 @@
+{
+  "TranslationProperties": {
+    "Name": "Magic Workbench",
+    "Description": "The heart of magical craftsmanship. Infused with ancient energies, this workbench allows the creation of powerful magical items and tools. Requires Mana Crystals as catalyst."
+  },
+  "Id": "SF_Magic_Workbench",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_magic_workbench.png",
+  "Model": "Items/sf_magic_workbench/model.blockymodel",
+  "Texture": "Items/sf_magic_workbench/model_texture.png",
+  "Quality": "Epic",
+  "Categories": ["Blocks.Magic"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Wood",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Wood",
+        "ItemId": "SF_Magic_Workbench"
+      }
+    },
+    "BlockParticleSetId": "Magic",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_magic_workbench.png"
+      }
+    ],
+    "ParticleColor": "#7c3aed",
+    "BlockSoundSetId": "Wood",
+    "BlockBreakingDecalId": "Breaking_Decals_Wood",
+    "EmissiveLight": 6
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}

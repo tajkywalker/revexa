@@ -1,0 +1,299 @@
+// ═══════════════════════════════════════════════════════
+//  sf_magic_machine.ui
+//  Aunaria Slimefun 2.0 — Magical machine GUI
+//  Dark arcane aesthetic — purple/gold theme
+//  Used by: Magic Workbench, Alchemist's Cauldron,
+//           Crystal Infuser
+// ═══════════════════════════════════════════════════════
+
+@PurpleDark   = #0d0318(0.98);
+@PurpleMid    = #1a0a30;
+@PurpleAccent = #7c3aed;
+@PurpleGlow   = #a855f7;
+@GoldAccent   = #d97706;
+@GoldLight    = #fbbf24;
+@CrystalBlue  = #7dd3fc;
+@TextLight    = #f0e6ff;
+@TextMuted    = #6b5a8a;
+@SlotBg       = #150820;
+@SlotBorder   = #4c1d95;
+@SlotSize     = 54;
+@SlotGap      = 8;
+
+Group #SFMagicOverlay {
+    Anchor: (Full: 0);
+    Background: #060010(0.75);
+
+    // Decorative corner rune top-left
+    Image #RuneCornerTL {
+        Anchor: (Width: 120, Height: 120);
+        Path: "sf_rune_corner.png";
+        Tint: @PurpleAccent;
+    }
+
+    // ─── Main panel ───────────────────────────────────
+    Group #SFMagicPanel {
+        Anchor: (Width: 700, Height: 520, HorizontalCenter: 0, VerticalCenter: 0);
+        Background: @PurpleDark;
+        Style: (BorderColor: @PurpleAccent, BorderWidth: 2, CornerRadius: 4);
+
+        // Glow border effect (inner)
+        Group #GlowBorderTop {
+            Anchor: (Height: 1, Left: 2, Right: 2, Top: 2);
+            Background: @PurpleGlow;
+        }
+        Group #GlowBorderLeft {
+            Anchor: (Width: 1, Top: 2, Bottom: 2, Left: 2);
+            Background: @PurpleGlow;
+        }
+
+        // ─── Header ───────────────────────────────────
+        Group #MagicHeader {
+            Anchor: (Height: 80, Left: 0, Right: 0, Top: 0);
+            Background: @PurpleMid;
+
+            // Bottom header separator — golden line
+            Group #GoldLine {
+                Anchor: (Height: 2, Left: 20, Right: 20, Bottom: 0);
+                Background: @GoldAccent;
+            }
+
+            // Arcane circle background decoration
+            Image #ArcaneCircle {
+                Anchor: (Width: 72, Height: 72, Left: 10, VerticalCenter: 0);
+                Path: "sf_arcane_circle.png";
+                Tint: @PurpleAccent;
+            }
+
+            // Machine icon (on top of arcane circle)
+            Image #MachineIcon {
+                Anchor: (Width: 48, Height: 48, Left: 22, VerticalCenter: 0);
+            }
+
+            // Title
+            Label #MachineName {
+                Anchor: (Left: 100, Right: 180, Top: 14, Height: 30);
+                Style: (FontName: "Secondary", FontSize: 24, Color: @TextLight, LetterSpacing: 2);
+                Text: "MAGIC WORKBENCH";
+            }
+
+            // Subtitle
+            Label #MachineSubtitle {
+                Anchor: (Left: 102, Right: 180, Top: 46, Height: 18);
+                Style: (FontSize: 12, Color: @GoldLight, LetterSpacing: 1);
+                Text: "Magical Crafting Station";
+            }
+
+            // Mana Crystal indicator
+            Group #ManaCrystalIndicator {
+                Anchor: (Width: 130, Height: 30, Right: 70, VerticalCenter: 0);
+
+                Image #CrystalIcon {
+                    Anchor: (Width: 20, Height: 20, Left: 0, VerticalCenter: 0);
+                    Path: "sf_mana_crystal_icon.png";
+                }
+                Label #CrystalCount {
+                    Anchor: (Left: 26, Right: 0, VerticalCenter: 0);
+                    Style: (FontSize: 13, Color: @PurpleGlow);
+                    Text: "0x Mana Crystal";
+                }
+            }
+
+            // Close button
+            TextButton #CloseBtn {
+                Anchor: (Width: 32, Height: 32, Right: 16, Top: 12);
+                Style: (
+                    Background: #200a3a(0),
+                    HoverBackground: #3d1a6a,
+                    BorderColor: @SlotBorder,
+                    BorderWidth: 1,
+                    FontSize: 16,
+                    Color: @TextMuted,
+                    CornerRadius: 4
+                );
+                Text: "✕";
+                DataEvent: "sf_close_gui";
+            }
+        }
+
+        // ─── Content ───────────────────────────────────
+        Group #MagicContent {
+            Anchor: (Left: 0, Right: 0, Top: 80, Bottom: 60);
+
+            // ─── Input zone ────────────────────────────
+            Group #InputZone {
+                Anchor: (Width: 210, Top: 16, Bottom: 16, Left: 16);
+
+                Label #InputLabel {
+                    Anchor: (Height: 18, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 10, Color: @TextMuted, LetterSpacing: 3);
+                    Text: "MATERIALS";
+                }
+
+                // Decorative span under label
+                Group #InputSpan {
+                    Anchor: (Height: 1, Left: 0, Width: 60, Top: 20);
+                    Background: @GoldAccent;
+                }
+
+                Group #InputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 30, Bottom: 0);
+                    LayoutMode: TopLeft;
+
+                    @MagicSlot = Group {
+                        Anchor: (Width: @SlotSize, Height: @SlotSize);
+                        Margin: (Right: @SlotGap, Bottom: @SlotGap);
+                        Background: @SlotBg;
+                        Style: (BorderColor: @SlotBorder, BorderWidth: 1, CornerRadius: 6);
+
+                        // Corner glow dots
+                        Group #DotTL {
+                            Anchor: (Width: 4, Height: 4, Left: 2, Top: 2);
+                            Background: @PurpleAccent;
+                            Style: (CornerRadius: 2);
+                        }
+                        Group #DotBR {
+                            Anchor: (Width: 4, Height: 4, Right: 2, Bottom: 2);
+                            Background: @PurpleAccent;
+                            Style: (CornerRadius: 2);
+                        }
+
+                        Image #SlotIcon { Anchor: (Full: 8); Visible: false; }
+                        Label #SlotQty {
+                            Anchor: (Width: 32, Height: 16, Right: 2, Bottom: 2);
+                            Style: (FontSize: 12, Color: @TextLight, HorizontalAlignment: Right);
+                            Text: "";
+                        }
+                    }
+
+                    @MagicSlot #InputSlot0 {}
+                    @MagicSlot #InputSlot1 {}
+                    @MagicSlot #InputSlot2 {}
+                    @MagicSlot #InputSlot3 {}
+                    @MagicSlot #InputSlot4 {}
+                    @MagicSlot #InputSlot5 {}
+                }
+            }
+
+            // ─── Center: arcane animation zone ─────────
+            Group #ArcaneCenter {
+                Anchor: (Width: 200, Top: 0, Bottom: 0, HorizontalCenter: 0);
+
+                // Large arcane circle background
+                Image #LargeCircle {
+                    Anchor: (Width: 120, Height: 120, HorizontalCenter: 0, VerticalCenter: -20);
+                    Path: "sf_arcane_circle_large.png";
+                    Tint: @PurpleAccent;
+                }
+
+                // Spinning inner rune (animated via Java)
+                Image #InnerRune {
+                    Anchor: (Width: 80, Height: 80, HorizontalCenter: 0, VerticalCenter: -20);
+                    Path: "sf_inner_rune.png";
+                    Tint: @GoldLight;
+                }
+
+                // Progress ring
+                Group #ProgressRing {
+                    Anchor: (Width: 140, Height: 24, HorizontalCenter: 0, VerticalCenter: 60);
+                    Background: #1a0a30;
+                    Style: (BorderColor: @SlotBorder, BorderWidth: 1, CornerRadius: 8);
+
+                    Group #ProgressFillBar {
+                        Anchor: (Left: 2, Top: 2, Bottom: 2, Width: 0);
+                        Background: @PurpleGlow;
+                        Style: (CornerRadius: 6);
+                    }
+
+                    Label #ProgressLabel {
+                        Anchor: (Full: 0);
+                        Style: (FontSize: 11, Color: @TextLight, HorizontalAlignment: Center, VerticalAlignment: Center);
+                        Text: "Awaiting materials";
+                    }
+                }
+
+                // Recipe description
+                Label #RecipeInfo {
+                    Anchor: (Height: 40, Left: 10, Right: 10, VerticalCenter: 98);
+                    Style: (FontSize: 11, Color: @TextMuted, HorizontalAlignment: Center, Multiline: true);
+                    Text: "";
+                }
+            }
+
+            // ─── Output zone ───────────────────────────
+            Group #OutputZone {
+                Anchor: (Width: 210, Top: 16, Bottom: 16, Right: 16);
+
+                Label #OutputLabel {
+                    Anchor: (Height: 18, Left: 0, Right: 0, Top: 0);
+                    Style: (FontSize: 10, Color: @TextMuted, LetterSpacing: 3);
+                    Text: "RESULTS";
+                }
+
+                Group #OutputSpan {
+                    Anchor: (Height: 1, Right: 0, Width: 60, Top: 20);
+                    Background: @GoldAccent;
+                }
+
+                Group #OutputSlots {
+                    Anchor: (Left: 0, Right: 0, Top: 30, Bottom: 50);
+                    LayoutMode: TopLeft;
+
+                    @MagicSlot #OutputSlot0 {}
+                    @MagicSlot #OutputSlot1 {}
+                    @MagicSlot #OutputSlot2 {}
+                    @MagicSlot #OutputSlot3 {}
+                }
+
+                TextButton #CollectBtn {
+                    Anchor: (Height: 38, Left: 0, Right: 0, Bottom: 0);
+                    Style: (
+                        Background: #0a0a20,
+                        HoverBackground: #150a2e,
+                        BorderColor: @GoldAccent,
+                        BorderWidth: 1,
+                        FontSize: 13,
+                        Color: @GoldLight,
+                        LetterSpacing: 2,
+                        CornerRadius: 4
+                    );
+                    Text: "✦  COLLECT ALL";
+                    DataEvent: "sf_collect_output";
+                }
+            }
+        }
+
+        // ─── Footer ────────────────────────────────────
+        Group #MagicFooter {
+            Anchor: (Height: 60, Left: 0, Right: 0, Bottom: 0);
+            Background: @PurpleMid;
+
+            Group #FooterGoldLine {
+                Anchor: (Height: 2, Left: 20, Right: 20, Top: 0);
+                Background: @GoldAccent;
+            }
+
+            Label #FooterStatus {
+                Anchor: (Left: 24, Right: 260, VerticalCenter: 8);
+                Style: (FontSize: 12, Color: @TextMuted);
+                Text: "Insert materials and Mana Crystals to begin crafting";
+            }
+
+            TextButton #RecipesBtn {
+                Anchor: (Width: 160, Height: 38, Right: 16, VerticalCenter: 4);
+                Style: (
+                    Background: #1a0a30,
+                    HoverBackground: #2d1a4a,
+                    BorderColor: @PurpleAccent,
+                    BorderWidth: 1,
+                    FontSize: 13,
+                    Color: @PurpleGlow,
+                    LetterSpacing: 1,
+                    CornerRadius: 4
+                );
+                Text: "✦  SPELL BOOK";
+                DataEvent: "sf_open_recipes";
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "TranslationProperties": {
+    "Name": "Void Essence",
+    "Description": "Distilled essence of the void dimension. Extremely volatile and powerful. Required for Tier-3 transmutations and the most advanced Slimefun 2.0 recipes."
+  },
+  "Id": "SF_Void_Essence",
+  "MaxStack": 16,
+  "Icon": "Icons/ItemsGenerated/sf_void_essence.png",
+  "Quality": "Legendary",
+  "Categories": ["Items.Magic"]
+}

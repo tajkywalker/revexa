@@ -1,0 +1,46 @@
+{
+  "TranslationProperties": {
+    "Name": "Alchemist's Cauldron",
+    "Description": "A mystical brewing vessel that transforms raw ingredients into powerful elixirs, potions, and magical essences. Heat level determines what can be brewed."
+  },
+  "Id": "SF_Alchemist_Cauldron",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_alchemist_cauldron.png",
+  "Model": "Items/sf_alchemist_cauldron/model.blockymodel",
+  "Texture": "Items/sf_alchemist_cauldron/model_texture.png",
+  "Quality": "Epic",
+  "Categories": ["Blocks.Magic"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Stone",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "SF_Alchemist_Cauldron"
+      }
+    },
+    "BlockParticleSetId": "Magic",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_alchemist_cauldron.png"
+      }
+    ],
+    "ParticleColor": "#16a34a",
+    "BlockSoundSetId": "Stone",
+    "BlockBreakingDecalId": "Breaking_Decals_Rock",
+    "EmissiveLight": 8
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}

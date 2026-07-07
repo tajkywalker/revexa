@@ -5,11 +5,16 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import studio.walkercrew.aunaria.slimefun.command.SlimefunCommand;
 import studio.walkercrew.aunaria.slimefun.core.SlimefunRegistry;
 import studio.walkercrew.aunaria.slimefun.energy.EnergyNetworkManager;
+import studio.walkercrew.aunaria.slimefun.gui.MachineGuiManager;
 import studio.walkercrew.aunaria.slimefun.implementations.generators.CoalGenerator;
 import studio.walkercrew.aunaria.slimefun.implementations.generators.SolarGenerator;
 import studio.walkercrew.aunaria.slimefun.implementations.machines.ElectricFurnace;
 import studio.walkercrew.aunaria.slimefun.implementations.machines.EnhancedCraftingTable;
 import studio.walkercrew.aunaria.slimefun.implementations.machines.OreWasher;
+import studio.walkercrew.aunaria.slimefun.implementations.magical.AlchemistCauldron;
+import studio.walkercrew.aunaria.slimefun.implementations.magical.ArcaneForge;
+import studio.walkercrew.aunaria.slimefun.implementations.magical.CrystalInfuser;
+import studio.walkercrew.aunaria.slimefun.implementations.magical.MagicWorkbench;
 import studio.walkercrew.aunaria.slimefun.implementations.storage.EnergyCapacitor;
 import studio.walkercrew.aunaria.slimefun.machine.AbstractMachine;
 import studio.walkercrew.aunaria.slimefun.research.ResearchManager;
@@ -43,6 +48,7 @@ public class SlimefunPlugin extends JavaPlugin {
     private ResearchManager researchManager;
     private EnergyNetworkManager energyNetworkManager;
     private MachineTickSystem machineTickSystem;
+    private MachineGuiManager machineGuiManager;
 
     public SlimefunPlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -66,6 +72,9 @@ public class SlimefunPlugin extends JavaPlugin {
         // 4. Strojní tick systém
         machineTickSystem = new MachineTickSystem(registry, energyNetworkManager);
 
+        // 4b. GUI správce
+        machineGuiManager = new MachineGuiManager();
+
         // 5. Interakční systém (ECS) — zpracovává klikání na stroje
         this.getEntityStoreRegistry().registerSystem(new MachineInteractionSystem(registry));
         this.getEntityStoreRegistry().registerSystem(machineTickSystem);
@@ -76,7 +85,10 @@ public class SlimefunPlugin extends JavaPlugin {
         // 7. Příkaz /sf
         this.getCommandManager().register(new SlimefunCommand(registry, researchManager));
 
-        logger.info("✔ Aunaria Slimefun 2.0 spuštěn. Registrováno " + registry.getMachineCount() + " strojů.");
+        logger.info("✔ Aunaria Slimefun 2.0 spuštěn. Registrováno " + registry.getMachineCount() +
+            " strojů (" + registry.getAllMachines().stream()
+                .filter(m -> m instanceof studio.walkercrew.aunaria.slimefun.implementations.magical.AbstractMagicalMachine)
+                .count() + " magických).");
     }
 
     // ─── Registrace veškerého SF obsahu ────────────────────────────────────────
@@ -93,6 +105,12 @@ public class SlimefunPlugin extends JavaPlugin {
 
         // Úložiště energie
         registry.registerMachine(new EnergyCapacitor());
+
+        // ─── Magické stroje ────────────────────────────────────────────────
+        registry.registerMachine(new MagicWorkbench());
+        registry.registerMachine(new AlchemistCauldron());
+        registry.registerMachine(new ArcaneForge());
+        registry.registerMachine(new CrystalInfuser());
 
         // Výzkumné stromy přiřazené ke strojům
         assignResearch();
@@ -119,6 +137,20 @@ public class SlimefunPlugin extends JavaPlugin {
             advancedResearch.addUnlockedMachine("SF_Ore_Washer");
             advancedResearch.addUnlockedMachine("SF_Solar_Generator");
         }
+
+        // Arcane arts — magické stroje Tier 1
+        SlimefunResearch arcaneArts = researchManager.getResearch("sf_arcane_arts");
+        if (arcaneArts != null) {
+            arcaneArts.addUnlockedMachine("SF_Magic_Workbench");
+            arcaneArts.addUnlockedMachine("SF_Alchemist_Cauldron");
+        }
+
+        // Arcane mastery — Tier 3 magické stroje
+        SlimefunResearch arcaneMastery = researchManager.getResearch("sf_arcane_mastery");
+        if (arcaneMastery != null) {
+            arcaneMastery.addUnlockedMachine("SF_Arcane_Forge");
+            arcaneMastery.addUnlockedMachine("SF_Crystal_Infuser");
+        }
     }
 
     // ─── Gettery ───────────────────────────────────────────────────────────────
@@ -130,6 +162,8 @@ public class SlimefunPlugin extends JavaPlugin {
     public EnergyNetworkManager getEnergyNetworkManager() { return energyNetworkManager; }
 
     public MachineTickSystem getMachineTickSystem() { return machineTickSystem; }
+
+    public MachineGuiManager getMachineGuiManager() { return machineGuiManager; }
 
     /** Cesta k adresáři pluginu pro ukládání dat strojů */
     public Path getDataDirectory() {
