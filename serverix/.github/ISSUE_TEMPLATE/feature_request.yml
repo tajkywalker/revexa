@@ -1,0 +1,39 @@
+name: Feature Request
+description: Suggest a new feature for Serverix
+labels: [enhancement]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Feature Title
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Target Module
+      options:
+        - Dashboard
+        - Players
+        - Tickets
+        - Reports
+        - Recruitments
+        - Server Status
+        - New Module
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: What would you like to see?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      placeholder: Why is this needed?

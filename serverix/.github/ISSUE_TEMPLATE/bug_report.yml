@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a bug in Serverix
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Aunaria Serverix — Bug Report**
+        Thanks for taking the time to report a bug!
+
+  - type: input
+    id: summary
+    attributes:
+      label: Bug Summary
+      placeholder: Short description of the bug
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Dashboard
+        - Players
+        - Tickets
+        - Reports
+        - Recruitments
+        - Server Status
+        - Authentication
+        - API
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Serverix Version
+      placeholder: v1.0.0
