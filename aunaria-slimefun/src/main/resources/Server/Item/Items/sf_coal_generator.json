@@ -1,0 +1,45 @@
+{
+  "TranslationProperties": {
+    "Name": "Coal Generator",
+    "Description": "Burns coal and similar fuels to produce energy for nearby machines. Output: 16 J/s."
+  },
+  "Id": "SF_Coal_Generator",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_coal_generator.png",
+  "Model": "Items/sf_coal_generator/model.blockymodel",
+  "Texture": "Items/sf_coal_generator/model_texture.png",
+  "Quality": "Common",
+  "Categories": ["Blocks.Technology"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Stone",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "SF_Coal_Generator"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_coal_generator.png"
+      }
+    ],
+    "ParticleColor": "#888888",
+    "BlockSoundSetId": "Stone",
+    "BlockBreakingDecalId": "Breaking_Decals_Rock"
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}

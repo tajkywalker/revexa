@@ -1,0 +1,11 @@
+{
+  "Id": "aunaria-slimefun",
+  "Name": "Aunaria Slimefun 2.0",
+  "Version": "${version}",
+  "Description": "Next-generation automation and technology plugin for Aunaria Hytale server. Features 3D machine models, energy networks, custom materials, and research trees.",
+  "Authors": ["WalkerCrewStudio"],
+  "EntryPoint": "studio.walkercrew.aunaria.slimefun.SlimefunPlugin",
+  "IncludesAssetPack": true,
+  "Dependencies": [],
+  "SoftDependencies": ["aunaria"]
+}

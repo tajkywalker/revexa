@@ -1,0 +1,13 @@
+{
+  "TranslationProperties": {
+    "Name": "Refined Iron",
+    "Description": "Pure iron ingot processed through the Ore Washer. Used as a base material for advanced Slimefun 2.0 components."
+  },
+  "Id": "SF_Refined_Iron",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_refined_iron.png",
+  "Model": "Items/sf_refined_iron/model.blockymodel",
+  "Texture": "Items/sf_refined_iron/model_texture.png",
+  "Quality": "Common",
+  "Categories": ["Items.Materials"]
+}

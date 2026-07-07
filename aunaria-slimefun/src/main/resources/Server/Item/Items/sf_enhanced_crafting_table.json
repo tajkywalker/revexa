@@ -1,0 +1,45 @@
+{
+  "TranslationProperties": {
+    "Name": "Enhanced Crafting Table",
+    "Description": "An advanced crafting station required to create Slimefun 2.0 items. Unlock new recipes through research."
+  },
+  "Id": "SF_Enhanced_Crafting_Table",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_enhanced_crafting_table.png",
+  "Model": "Items/sf_enhanced_crafting_table/model.blockymodel",
+  "Texture": "Items/sf_enhanced_crafting_table/model_texture.png",
+  "Quality": "Rare",
+  "Categories": ["Blocks.Technology"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Stone",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "SF_Enhanced_Crafting_Table"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_enhanced_crafting_table.png"
+      }
+    ],
+    "ParticleColor": "#4a90d9",
+    "BlockSoundSetId": "Wood",
+    "BlockBreakingDecalId": "Breaking_Decals_Rock"
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}

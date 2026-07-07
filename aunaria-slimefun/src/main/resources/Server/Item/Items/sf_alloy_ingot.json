@@ -1,0 +1,13 @@
+{
+  "TranslationProperties": {
+    "Name": "Alloy Ingot",
+    "Description": "A high-strength alloy produced by smelting refined metals together. Required for Tier-2 Slimefun 2.0 machines."
+  },
+  "Id": "SF_Alloy_Ingot",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_alloy_ingot.png",
+  "Model": "Items/sf_alloy_ingot/model.blockymodel",
+  "Texture": "Items/sf_alloy_ingot/model_texture.png",
+  "Quality": "Uncommon",
+  "Categories": ["Items.Materials"]
+}

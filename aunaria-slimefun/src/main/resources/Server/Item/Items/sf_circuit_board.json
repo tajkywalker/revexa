@@ -1,0 +1,13 @@
+{
+  "TranslationProperties": {
+    "Name": "Circuit Board",
+    "Description": "A basic electronic component used in crafting Slimefun 2.0 machines and devices."
+  },
+  "Id": "SF_Circuit_Board",
+  "MaxStack": 64,
+  "Icon": "Icons/ItemsGenerated/sf_circuit_board.png",
+  "Model": "Items/sf_circuit_board/model.blockymodel",
+  "Texture": "Items/sf_circuit_board/model_texture.png",
+  "Quality": "Common",
+  "Categories": ["Items.Technology"]
+}

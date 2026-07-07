@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'studio.walkercrew.aunaria'
+version = pluginVersion
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    // Hytale Server JAR (lokální)
+    compileOnly files(hytaleServerPath)
+
+    // BSON pro custom metadata ItemStack
+    implementation 'org.mongodb:bson:4.11.1'
+
+    // Gson pro persistenci machine states
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // SLF4J logging
+    compileOnly 'org.slf4j:slf4j-api:2.0.9'
+}
+
+processResources {
+    filesMatching('manifest.json') {
+        expand(version: project.version)
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('aunaria-slimefun')
+    archiveVersion.set(pluginVersion)
+    archiveClassifier.set('')
+
+    relocate 'com.google.gson', 'studio.walkercrew.aunaria.slimefun.libs.gson'
+    relocate 'org.bson',        'studio.walkercrew.aunaria.slimefun.libs.bson'
+}
+
+jar.dependsOn shadowJar

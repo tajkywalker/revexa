@@ -1,0 +1,45 @@
+{
+  "TranslationProperties": {
+    "Name": "Energy Capacitor",
+    "Description": "Stores energy produced by generators and supplies nearby machines. Capacity: 1024 J."
+  },
+  "Id": "SF_Energy_Capacitor",
+  "MaxStack": 1,
+  "Icon": "Icons/ItemsGenerated/sf_energy_capacitor.png",
+  "Model": "Items/sf_energy_capacitor/model.blockymodel",
+  "Texture": "Items/sf_energy_capacitor/model_texture.png",
+  "Quality": "Uncommon",
+  "Categories": ["Blocks.Technology"],
+  "PlayerAnimationsId": "Block",
+  "Set": "Rock_Stone",
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Group": "Stone",
+    "Flags": {},
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Rocks",
+        "ItemId": "SF_Energy_Capacitor"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "Textures": [
+      {
+        "All": "BlockTextures/sf_energy_capacitor.png"
+      }
+    ],
+    "ParticleColor": "#a855f7",
+    "BlockSoundSetId": "Stone",
+    "BlockBreakingDecalId": "Breaking_Decals_Rock"
+  },
+  "Interactions": {
+    "Secondary": {
+      "Interactions": [
+        {
+          "Type": "sf_machine_interact"
+        }
+      ]
+    }
+  }
+}
