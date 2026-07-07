@@ -132,13 +132,14 @@ model AdminUser {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  sessions      AdminSession[]
-  ticketReplies TicketReply[]
-  resolvedTickets Ticket[]    @relation("ResolvedBy")
-  handledReports  Report[]    @relation("HandledBy")
-  punishmentsGiven Punishment[] @relation("IssuedBy")
-  recruitmentReviews Recruitment[] @relation("ReviewedBy")
-  auditLogs     AuditLog[]
+  sessions           AdminSession[]
+  ticketReplies      TicketReply[]
+  assignedTickets    Ticket[]       @relation("AssignedTo")
+  resolvedTickets    Ticket[]       @relation("ResolvedBy")
+  handledReports     Report[]       @relation("HandledBy")
+  punishmentsGiven   Punishment[]   @relation("IssuedBy")
+  recruitmentReviews Recruitment[]  @relation("ReviewedBy")
+  auditLogs          AuditLog[]
 
   @@map("admin_users")
 }
@@ -284,7 +285,7 @@ model Ticket {
   updatedAt     DateTime        @updatedAt
 
   player        Player          @relation(fields: [playerId], references: [id])
-  assignedTo    AdminUser?      @relation(fields: [assignedToId], references: [id])
+  assignedTo    AdminUser?      @relation("AssignedTo", fields: [assignedToId], references: [id])
   resolvedBy    AdminUser?      @relation("ResolvedBy", fields: [resolvedById], references: [id])
   replies       TicketReply[]
 
