@@ -4,7 +4,8 @@ import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // No adapter — we use pure JWT strategy (no DB sessions)
+  // No adapter — pure JWT strategy
+  trustHost: true,   // allow IP access (167.233.233.156), fixes UntrustedHost error
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   pages: {
