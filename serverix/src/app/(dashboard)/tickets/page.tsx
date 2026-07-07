@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic'
 
 interface SearchParams { status?: string; priority?: string; search?: string; page?: string }
 
-export default async function TicketsPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function TicketsPage({ searchParams: _sp }: { searchParams: Promise<SearchParams> }) {
+  const searchParams = await _sp
   const page  = Math.max(1, parseInt(searchParams.page ?? '1'))
   const limit = 20
   const skip  = (page - 1) * limit

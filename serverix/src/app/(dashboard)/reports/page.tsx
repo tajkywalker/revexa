@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic'
 
 interface SearchParams { status?: string; reason?: string; page?: string }
 
-export default async function ReportsPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function ReportsPage({ searchParams: _sp }: { searchParams: Promise<SearchParams> }) {
+  const searchParams = await _sp
   const session = await auth()
   const page    = Math.max(1, parseInt(searchParams.page ?? '1'))
   const limit   = 20

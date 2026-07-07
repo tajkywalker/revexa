@@ -7,20 +7,22 @@ import {
 } from '@/lib/utils'
 import {
   ArrowLeft, Crown, Ban, VolumeX, AlertTriangle, Clock,
-  Gamepad2, Discord, Mail, Server, Shield, Calendar, Zap,
+  Gamepad2, Mail, Server, Shield, Calendar, Zap,
 } from 'lucide-react'
 import { BanPlayerButton } from '@/components/players/BanPlayerButton'
 
 export const dynamic = 'force-dynamic'
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  const player = await prisma.player.findUnique({ where: { id: params.id }, select: { username: true } })
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const player = await prisma.player.findUnique({ where: { id }, select: { username: true } })
   return { title: player ? `Hráč: ${player.username}` : 'Hráč nenalezen' }
 }
 
-export default async function PlayerDetailPage({ params }: { params: { id: string } }) {
+export default async function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: playerId } = await params
   const player = await prisma.player.findUnique({
-    where: { id: params.id },
+    where: { id: playerId },
     include: {
       punishments: {
         orderBy: { createdAt: 'desc' },

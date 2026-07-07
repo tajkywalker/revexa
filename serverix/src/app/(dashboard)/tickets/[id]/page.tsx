@@ -12,11 +12,12 @@ import { TicketActions } from '@/components/tickets/TicketActions'
 
 export const dynamic = 'force-dynamic'
 
-export default async function TicketDetailPage({ params }: { params: { id: string } }) {
+export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: ticketId } = await params
   const [session, ticket] = await Promise.all([
     auth(),
     prisma.ticket.findUnique({
-      where: { id: params.id },
+      where: { id: ticketId },
       include: {
         player:     { select: { id: true, username: true, hytaleUuid: true } },
         assignedTo: { select: { id: true, username: true, avatar: true } },

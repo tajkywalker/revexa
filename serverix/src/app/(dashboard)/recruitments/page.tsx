@@ -21,7 +21,8 @@ const statusColor: Record<string, string> = {
   WITHDRAWN:    'bg-gray-500/10 text-gray-400 border-gray-500/20',
 }
 
-export default async function RecruitmentsPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function RecruitmentsPage({ searchParams: _sp }: { searchParams: Promise<SearchParams> }) {
+  const searchParams = await _sp
   const page  = Math.max(1, parseInt(searchParams.page ?? '1'))
   const limit = 20
   const skip  = (page - 1) * limit

@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic'
 
 interface SearchParams { search?: string; status?: string; vip?: string; page?: string }
 
-export default async function PlayersPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function PlayersPage({ searchParams: _sp }: { searchParams: Promise<SearchParams> }) {
+  const searchParams = await _sp
   const page  = Math.max(1, parseInt(searchParams.page ?? '1'))
   const limit = 25
   const skip  = (page - 1) * limit
