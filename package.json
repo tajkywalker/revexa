@@ -9,10 +9,11 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
-    "expo-build-properties": "~56.0.0",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
+    "date-fns": "^3.6.0",
     "expo": "56.0.12",
+    "expo-build-properties": "~56.0.0",
     "expo-camera": "56.0.8",
     "expo-file-system": "56.0.8",
     "expo-font": "56.0.7",
@@ -25,6 +26,7 @@
     "expo-sharing": "56.0.18",
     "expo-sqlite": "56.0.5",
     "expo-status-bar": "56.0.4",
+    "libsodium-wrappers": "^0.8.4",
     "react": "19.2.3",
     "react-native": "0.85.3",
     "react-native-gesture-handler": "~2.31.1",
@@ -33,7 +35,7 @@
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
-    "date-fns": "^3.6.0",
+    "ssh2": "^1.17.0",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
