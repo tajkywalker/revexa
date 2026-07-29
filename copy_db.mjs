@@ -1,9 +1,9 @@
 import { Client } from 'ssh2';
 import { readFileSync } from 'fs';
 const conn = new Client();
-const script = readFileSync('/tmp/restore_full_db.sh', 'utf8');
+const script = readFileSync('/tmp/copy_db.sh', 'utf8');
 conn.on('ready', () => {
-  conn.exec('cat > /tmp/rdb.sh && bash /tmp/rdb.sh', (err, stream) => {
+  conn.exec('cat > /tmp/cdb.sh && bash /tmp/cdb.sh', (err, stream) => {
     if (err) { console.error(err); conn.end(); return; }
     stream.stdin.write(script);
     stream.stdin.end();
