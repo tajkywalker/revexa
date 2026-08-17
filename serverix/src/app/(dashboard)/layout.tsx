@@ -9,10 +9,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.user) redirect('/login')
 
   // Fetch badge counts
-  const [openTickets, pendingReports, openRecruitments] = await Promise.all([
+  const [openTickets, pendingReports, openRecruitments, activePunishments] = await Promise.all([
     prisma.ticket.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
     prisma.report.count({ where: { status: 'PENDING' } }),
     prisma.recruitment.count({ where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } } }),
+    prisma.punishment.count({ where: { isActive: true, createdAt: { gte: new Date(Date.now() - 86400000) } } }),
   ])
 
   return (
@@ -27,6 +28,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           tickets:      openTickets,
           reports:      pendingReports,
           recruitments: openRecruitments,
+          moderation:   activePunishments,
         }}
       />
 

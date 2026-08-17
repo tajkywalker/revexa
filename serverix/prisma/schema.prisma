@@ -140,6 +140,8 @@ model AdminUser {
   punishmentsGiven   Punishment[]   @relation("IssuedBy")
   recruitmentReviews Recruitment[]  @relation("ReviewedBy")
   auditLogs          AuditLog[]
+  playerNotes        PlayerNote[]   @relation("NoteAuthor")
+  notifications      Notification[] @relation("AdminNotifications")
 
   @@map("admin_users")
 }
@@ -237,27 +239,82 @@ model PlayerNote {
   createdAt DateTime  @default(now())
 
   player    Player    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  author    AdminUser? @relation("NoteAuthor", fields: [authorId], references: [id])
 
+  @@index([playerId])
   @@map("player_notes")
+}
+
+// ─── Notifications ────────────────────────────────────
+
+enum NotificationType {
+  TICKET_REPLY
+  TICKET_ASSIGNED
+  TICKET_CLOSED
+  PUNISHMENT_ISSUED
+  REPORT_RESOLVED
+  RECRUITMENT_REVIEWED
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  adminId   String
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  admin     AdminUser        @relation("AdminNotifications", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, isRead])
+  @@map("notifications")
+}
+
+// ─── AI Usage Ledger ──────────────────────────────────
+
+model AIUsage {
+  id           String   @id @default(cuid())
+  provider     String   // "openai", "anthropic", "mock"
+  model        String
+  operation    String   // "ticket_classify", "ticket_reply", etc.
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  cachedTokens Int      @default(0)
+  latencyMs    Int      @default(0)
+  costUsd      Float    @default(0)
+  success      Boolean  @default(true)
+  errorMsg     String?
+  relatedId    String?  // ticket/player/etc. ID
+  adminId      String?  // who triggered it
+  createdAt    DateTime @default(now())
+
+  @@index([operation])
+  @@index([createdAt])
+  @@map("ai_usage")
 }
 
 // ─── Punishments ──────────────────────────────────────
 
 model Punishment {
-  id          String         @id @default(cuid())
-  playerId    String
-  type        PunishmentType
-  reason      String         @db.Text
-  issuedById  String
-  isActive    Boolean        @default(true)
-  expiresAt   DateTime?      // null = permanent
-  revokedAt   DateTime?
-  revokedById String?
+  id            String         @id @default(cuid())
+  playerId      String
+  type          PunishmentType
+  reason        String         @db.Text
+  evidence      String[]       // URLs
+  issuedById    String
+  isActive      Boolean        @default(true)
+  expiresAt     DateTime?      // null = permanent
+  revokedAt     DateTime?
+  revokedById   String?
+  revokedReason String?        @db.Text
 
-  createdAt   DateTime       @default(now())
+  createdAt     DateTime       @default(now())
 
-  player      Player         @relation(fields: [playerId], references: [id])
-  issuedBy    AdminUser      @relation("IssuedBy", fields: [issuedById], references: [id])
+  player        Player         @relation(fields: [playerId], references: [id])
+  issuedBy      AdminUser      @relation("IssuedBy", fields: [issuedById], references: [id])
 
   @@index([playerId])
   @@index([type])

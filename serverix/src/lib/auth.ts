@@ -79,6 +79,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         pathname.startsWith('/tickets') ||
         pathname.startsWith('/reports') ||
         pathname.startsWith('/recruitments') ||
+        pathname.startsWith('/moderation') ||
+        pathname.startsWith('/audit') ||
         pathname.startsWith('/server') ||
         pathname.startsWith('/settings')
       if (isProtected) return isLoggedIn

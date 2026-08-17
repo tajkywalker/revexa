@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-roboto: 'Roboto', sans-serif;
+  --font-oswald: 'Oswald', sans-serif;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-void text-gray-100 font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse 120% 60% at 50% -10%, rgba(123,82,244,0.15) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 30% at 80% 80%, rgba(62,207,207,0.06) 0%, transparent 50%);
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-deep; }
+  ::-webkit-scrollbar-thumb { @apply bg-accent rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-accent/80; }
+
+  ::selection { @apply bg-accent/30 text-white; }
+}
+
+@layer components {
+  /* Cards */
+  .an-card {
+    @apply bg-card border border-white/[0.06] rounded-2xl;
+  }
+  .an-card-glow {
+    @apply an-card shadow-card;
+    background-image: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(123,82,244,0.05) 0%, transparent 60%);
+  }
+
+  /* Buttons */
+  .an-btn {
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-title text-sm
+           font-semibold tracking-wide uppercase transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-accent/50;
+  }
+  .an-btn-primary {
+    @apply an-btn bg-accent hover:bg-accent/90 text-white shadow-accent hover:shadow-accent-lg hover:-translate-y-px;
+  }
+  .an-btn-secondary {
+    @apply an-btn bg-white/[0.06] hover:bg-white/[0.1] text-gray-200 border border-white/[0.08] hover:border-white/[0.15];
+  }
+  .an-btn-ghost {
+    @apply an-btn bg-transparent hover:bg-white/[0.04] text-gray-400 hover:text-gray-200;
+  }
+
+  /* Inputs */
+  .an-input {
+    @apply w-full px-4 py-2.5 bg-elevated border border-white/[0.08] rounded-xl
+           text-sm text-gray-100 placeholder-gray-500
+           focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/40
+           transition-colors;
+  }
+
+  /* Badge */
+  .an-badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs
+           font-semibold font-title tracking-wide border;
+  }
+
+  /* Hero section */
+  .an-hero-gradient {
+    background: radial-gradient(ellipse 80% 60% at 50% -5%, rgba(123,82,244,0.25) 0%, transparent 55%);
+  }
+
+  /* Nav */
+  .an-nav-link {
+    @apply text-sm font-title font-medium tracking-wide text-gray-400
+           hover:text-white transition-colors relative;
+  }
+  .an-nav-link.active {
+    @apply text-white;
+  }
+
+  /* Server status */
+  .an-server-card {
+    @apply an-card p-5 hover:border-white/[0.1] transition-all hover:-translate-y-0.5;
+  }
+
+  /* Profile */
+  .an-stat {
+    @apply flex flex-col items-center p-4 rounded-xl bg-elevated border border-white/[0.06];
+  }
+}

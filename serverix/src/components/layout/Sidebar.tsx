@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Users, Ticket, Flag, UserPlus,
   Server, Settings, LogOut, Shield, ChevronRight,
+  AlertTriangle, BookOpen,
 } from 'lucide-react'
 import { cn, getRoleBg } from '@/lib/utils'
 
@@ -13,22 +14,47 @@ interface NavItem {
   href:    string
   label:   string
   icon:    React.ElementType
-  badge?:  number
+  section?: string
 }
 
-const navItems: NavItem[] = [
-  { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/players',      label: 'Hráči',        icon: Users },
-  { href: '/tickets',      label: 'Tickety',      icon: Ticket },
-  { href: '/reports',      label: 'Reporty',      icon: Flag },
-  { href: '/recruitments', label: 'Nábory',       icon: UserPlus },
-  { href: '/server',       label: 'Server',       icon: Server },
-  { href: '/settings',     label: 'Nastavení',    icon: Settings },
+const navSections = [
+  {
+    id: 'main',
+    items: [
+      { href: '/dashboard',    label: 'Dashboard',  icon: LayoutDashboard },
+    ],
+  },
+  {
+    id: 'community',
+    label: 'Komunita',
+    items: [
+      { href: '/players',      label: 'Hráči',      icon: Users },
+      { href: '/moderation',   label: 'Moderace',   icon: AlertTriangle },
+      { href: '/tickets',      label: 'Tickety',    icon: Ticket },
+      { href: '/reports',      label: 'Reporty',    icon: Flag },
+      { href: '/recruitments', label: 'Nábory',     icon: UserPlus },
+    ],
+  },
+  {
+    id: 'infra',
+    label: 'Infrastruktura',
+    items: [
+      { href: '/server',       label: 'Servery',    icon: Server },
+    ],
+  },
+  {
+    id: 'system',
+    label: 'Systém',
+    items: [
+      { href: '/audit',        label: 'Audit Log',  icon: BookOpen },
+      { href: '/settings',     label: 'Nastavení',  icon: Settings },
+    ],
+  },
 ]
 
 interface SidebarProps {
   user: { username: string; role: string; avatar: string | null }
-  badges?: { tickets?: number; reports?: number; recruitments?: number }
+  badges?: { tickets?: number; reports?: number; recruitments?: number; moderation?: number }
 }
 
 export function Sidebar({ user, badges = {} }: SidebarProps) {
@@ -38,6 +64,7 @@ export function Sidebar({ user, badges = {} }: SidebarProps) {
     if (href === '/tickets')      return badges.tickets
     if (href === '/reports')      return badges.reports
     if (href === '/recruitments') return badges.recruitments
+    if (href === '/moderation')   return badges.moderation
     return undefined
   }
 
@@ -55,35 +82,46 @@ export function Sidebar({ user, badges = {} }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto hide-scrollbar">
-        {navItems.map(item => {
-          const Icon  = item.icon
-          const badge = getBadge(item.href)
-          const active = pathname === item.href || pathname.startsWith(item.href + '/')
+      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto hide-scrollbar">
+        {navSections.map(section => (
+          <div key={section.id}>
+            {section.label && (
+              <p className="px-3 mb-1 text-[10px] font-title font-semibold text-gray-600 uppercase tracking-widest">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map(item => {
+                const Icon  = item.icon
+                const badge = getBadge(item.href)
+                const active = pathname === item.href || pathname.startsWith(item.href + '/')
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all',
-                active
-                  ? 'bg-accent/10 text-white border border-accent/20'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]'
-              )}
-            >
-              <Icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-accent' : '')} />
-              <span className="flex-1 font-medium">{item.label}</span>
-              {badge != null && badge > 0 && (
-                <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center
-                                 rounded-full bg-accent text-white text-[10px] font-bold">
-                  {badge > 99 ? '99+' : badge}
-                </span>
-              )}
-              {active && <ChevronRight className="w-3 h-3 text-accent/60" />}
-            </Link>
-          )
-        })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all',
+                      active
+                        ? 'bg-accent/10 text-white border border-accent/20'
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]'
+                    )}
+                  >
+                    <Icon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-accent' : '')} />
+                    <span className="flex-1 font-medium">{item.label}</span>
+                    {badge != null && badge > 0 && (
+                      <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center
+                                       rounded-full bg-accent text-white text-[10px] font-bold">
+                        {badge > 99 ? '99+' : badge}
+                      </span>
+                    )}
+                    {active && <ChevronRight className="w-3 h-3 text-accent/60" />}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Server status pill */}

@@ -10,6 +10,9 @@ import {
   Gamepad2, Mail, Server, Shield, Calendar, Zap,
 } from 'lucide-react'
 import { BanPlayerButton } from '@/components/players/BanPlayerButton'
+import { PlayerNotes } from '@/components/players/PlayerNotes'
+import { auth } from '@/lib/auth'
+import { hasPermission } from '@/lib/permissions'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +52,22 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
 
   const activeBan  = player.punishments.find(p => p.type === 'BAN' && p.isActive)
   const activeMute = player.punishments.find(p => p.type === 'MUTE' && p.isActive)
+
+  const session   = await auth()
+  const adminId   = (session?.user as any)?.id ?? ''
+  const adminRole = (session?.user as any)?.role ?? 'HELPER'
+  const canViewNotes   = hasPermission(adminRole, 'players.notes.view')
+  const canCreateNotes = hasPermission(adminRole, 'players.notes.create')
+  const canViewIp      = hasPermission(adminRole, 'players.ip.view')
+
+  // Fetch notes with author names (only if permitted)
+  const notesWithAuthors = canViewNotes
+    ? await prisma.playerNote.findMany({
+        where: { playerId },
+        orderBy: { createdAt: 'desc' },
+        include: { author: { select: { username: true } } },
+      })
+    : []
 
   return (
     <div className="max-w-[1200px] space-y-5">
@@ -292,6 +311,37 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Staff notes */}
+          {canViewNotes && (
+            <PlayerNotes
+              playerId={player.id}
+              notes={notesWithAuthors}
+              canCreate={canCreateNotes}
+              currentAdminId={adminId}
+            />
+          )}
+
+          {/* IP info (restricted) */}
+          {canViewIp && player.lastIpAddress && (
+            <div className="sx-card overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/[0.06]">
+                <h3 className="text-sm font-title font-semibold text-red uppercase tracking-wide">
+                  IP informace (přísně důvěrné)
+                </h3>
+              </div>
+              <div className="p-5 space-y-2">
+                <p className="text-sm text-gray-400">
+                  Poslední IP: <code className="font-mono text-accent">{player.lastIpAddress}</code>
+                </p>
+                {player.ipHistory.length > 1 && (
+                  <p className="text-xs text-gray-500">
+                    Historie: {player.ipHistory.length} adres
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>

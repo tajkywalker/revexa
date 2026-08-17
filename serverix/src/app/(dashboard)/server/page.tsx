@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
-import { Server, Cpu, HardDrive, Activity, Users, Zap } from 'lucide-react'
+import { Server, Cpu, HardDrive, Activity, Users, Zap, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 export const metadata = { title: 'Server' }
 export const dynamic = 'force-dynamic'
@@ -29,7 +30,7 @@ export default async function ServerPage() {
           const memPct = stat ? Math.round(stat.memoryUsed / stat.memoryTotal * 100) : 0
 
           return (
-            <div key={srv.id} className={`sx-card p-5 ${!online ? 'opacity-50' : ''}`}>
+            <Link key={srv.id} href={`/server/${srv.id.toLowerCase()}`} className={`sx-card p-5 block hover:border-white/[0.12] transition-colors ${!online ? 'opacity-50' : ''}`}>
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
@@ -83,7 +84,11 @@ export default async function ServerPage() {
               ) : (
                 <p className="text-sm text-gray-600 text-center py-4">Žádná data</p>
               )}
-            </div>
+              <div className="flex items-center gap-1 mt-3 text-xs text-gray-600 hover:text-accent transition-colors">
+                <span>Detail serveru</span>
+                <ChevronRight className="w-3 h-3" />
+              </div>
+            </Link>
           )
         })}
       </div>
